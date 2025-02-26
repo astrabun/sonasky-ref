@@ -1,0 +1,33 @@
+{
+  "lexicon": 1,
+  "id": "app.sonasky.ref",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "Record containing a user's character.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": [
+          "createdAt"
+        ],
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp when the actor first created the record."
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp when the actor modified the record."
+          },
+          "characterProperties": {
+            "type": "unknown",
+            "description": "Character details."
+          }
+        }
+      }
+    }
+  }
+}
