@@ -6,6 +6,7 @@ import { CredentialManager, Client } from '@atcute/client';
 import type {} from '@atcute/atproto';
 import type { ActorIdentifier, Handle } from '@atcute/lexicons';
 import { HANDLE_RESOLVER_URL } from '../../const';
+import { getPds } from '../../helpers/getPds';
 
 function View() {
 
@@ -21,6 +22,18 @@ function View() {
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingText, setLoadingText] = useState<string>("Loading.");
   const [error, setError] = useState<boolean>(false);
+  const [altPds, setAltPds] = useState<string>();
+  useEffect(() => {
+    const handleGetPds = async () => {
+      if(did){
+        const pds = await getPds(did);
+        if(HANDLE_RESOLVER_URL !== pds){
+          setAltPds(pds);
+        }
+      }
+    };
+    handleGetPds();
+  }, [did])
 
   const [minLoadingTimePassed, setMinLoadingTimePassed] = useState<boolean>(false);
 
@@ -155,6 +168,9 @@ function View() {
               <a href={`https://bsky.app/profile/${handle}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "inherit" }}>
                 <Typography sx={{ typography: { sm: 'h2', xs: 'h4' } }}>@{handle}</Typography>
                 <Typography variant="caption" gutterBottom sx={{ marginLeft: "2rem" }}>{did}</Typography>
+                {altPds && <>
+                  <Typography variant="caption" gutterBottom sx={{ marginLeft: "2rem" }}>PDS: {altPds}</Typography>
+                </>}
               </a>
               <Divider sx={{ marginTop: "1rem", marginBottom: "1rem" }} />
               {sonaRecords !== undefined && <>
