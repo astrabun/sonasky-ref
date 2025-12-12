@@ -1,16 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import Layout from "../../../layouts/View";
-import { Container, Typography, Collapse, Fade, Box, Button, emphasize, Grid, Paper, Tooltip, FormControlLabel, Switch, Chip } from '@mui/material';
-import { CredentialManager, XRPC } from '@atcute/client';
+import { Container, Typography, Collapse, Fade, Box, Button, emphasize, Grid, Paper, Tooltip, FormControlLabel, Switch, Chip, styled } from '@mui/material';
+import { CredentialManager, Client } from '@atcute/client';
+import type {} from '@atcute/atproto';
+import type { ActorIdentifier } from '@atcute/lexicons';
 import { HANDLE_RESOLVER_URL } from '../../../const';
 import NotFound from "../../NotFound";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
+const Item = styled(Paper)(({ theme }) => ({
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: (theme.vars ?? theme).palette.text.secondary,
+  ...theme.applyStyles('dark', {
+  }),
+}));
+
 export function ViewCharacter() {
   const manager = new CredentialManager({ service: HANDLE_RESOLVER_URL });
-  const rpc = new XRPC({ handler: manager });
+  const rpc = new Client({ handler: manager });
   const { blueskyHandleOrDID, rkey } = useParams<{ blueskyHandleOrDID: string, rkey: string }>();
   const navigate = useNavigate();
   const [character, setCharacter] = useState<any | null>(null);
@@ -28,11 +39,11 @@ export function ViewCharacter() {
     try {
       const sonaRecords = await rpc.get('com.atproto.repo.listRecords', {
         params: {
-          repo: blueskyHandleOrDID ?? "",
+          repo: (blueskyHandleOrDID ?? "") as ActorIdentifier,
           collection: "app.sonasky.ref"
         }
       });
-      const record = sonaRecords.data.records.find((rec: any) => rec.uri.split("/").pop() === rkey);
+      const record = (sonaRecords.data as any).records.find((rec: any) => rec.uri.split("/").pop() === rkey);
       if (record) {
         setCharacter((record.value as any).character);
       } else {
@@ -60,7 +71,7 @@ export function ViewCharacter() {
           rkey: character.refSheet.split("/").pop()
          } }).then((response) => {
           const { data } = response;
-          const cid = (data.value as any).embed.images[0].image.ref.$link;
+          const cid = ((data as any).value as any).embed.images[0].image.ref.$link;
           setRefSheetImage(`https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split("/")[2]}/${cid}@jpeg`)
          })
       }
@@ -72,7 +83,7 @@ export function ViewCharacter() {
           rkey: character.altRef.split("/").pop()
          } }).then((response) => {
           const { data } = response;
-          const cid = (data.value as any).embed.images[0].image.ref.$link;
+          const cid = ((data as any).value as any).embed.images[0].image.ref.$link;
           setAltRefSheetImage(`https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split("/")[2]}/${cid}@jpeg`)
          })
       }
@@ -178,7 +189,7 @@ export function ViewCharacter() {
                   const handleCopyClick = () => { setCopyColorClicked(true) };
                   const handleMouseLeave = () => { setCopyColorClicked(false) };
                   return (
-                    <Grid item key={`color-${idx}`} xs={12} sm={4} md={4} lg={2}>
+                    <Item key={`color-${idx}`}>
                       <Tooltip title={copyColorClicked ? "Copied!" : defaultChipLabel} >
                         <Button
                           fullWidth
@@ -201,7 +212,7 @@ export function ViewCharacter() {
                           </Box>
                         </Button>
                       </Tooltip>
-                    </Grid>
+                    </Item>
                   )
                 })}
               </Grid>
