@@ -2,7 +2,9 @@ import { Link, useParams } from 'react-router';
 import Layout from "../../layouts/View";
 import { Container, Typography, Collapse, Fade, Divider, ListItem, ListItemText, Button } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { CredentialManager, XRPC } from '@atcute/client';
+import { CredentialManager, Client } from '@atcute/client';
+import type {} from '@atcute/atproto';
+import type { ActorIdentifier, Handle } from '@atcute/lexicons';
 import { HANDLE_RESOLVER_URL } from '../../const';
 
 function View() {
@@ -10,7 +12,7 @@ function View() {
   const UNKNOWN_ERROR = "INT__UNKNOWN_ERROR__INT";
 
   const manager = new CredentialManager({ service: HANDLE_RESOLVER_URL });
-  const rpc = new XRPC({ handler: manager });
+  const rpc = new Client({ handler: manager });
 
   const { blueskyHandleOrDID } = useParams<{ blueskyHandleOrDID: string }>();
   const lookupMode = blueskyHandleOrDID?.startsWith('did:') ? 'did' : 'handle';
@@ -26,14 +28,14 @@ function View() {
   const [sonaRecords, setSonaRecords] = useState<any | null>(null);
   const loadSonaRecords = useCallback(async () => {
     if(did) {
-      rpc.get('com.atproto.repo.listRecords', {
+      await rpc.get('com.atproto.repo.listRecords', {
         params: {
-          repo: did ?? "",
+          repo: (did ?? "") as ActorIdentifier,
           collection: "app.sonasky.ref"
         }
       }).then((response) => {
         const { data } = response;
-        setSonaRecords(data.records)
+        setSonaRecords((data as any).records)
       })
     }
   }, [repoData])
@@ -65,13 +67,13 @@ function View() {
     if (lookupMode === 'did') {
       rpc.get('com.atproto.repo.describeRepo', {
         params: {
-          repo: blueskyHandleOrDID ?? ""
+          repo: (blueskyHandleOrDID ?? "") as ActorIdentifier
         }
       }).then((response) => {
         const { data } = response;
         if (data) {
-          setHandle(data.handle);
-          setDid(data.did);
+          setHandle((data as any).handle);
+          setDid((data as any).did);
         } else {
           setHandle(UNKNOWN_ERROR);
           setDid(UNKNOWN_ERROR);
@@ -85,13 +87,13 @@ function View() {
     } else {
       rpc.get('com.atproto.identity.resolveHandle', {
         params: {
-          handle: blueskyHandleOrDID ?? ""
+          handle: (blueskyHandleOrDID ?? "") as Handle
         }
       }).then((response) => {
         const { data } = response;
         if (data) {
           setHandle(blueskyHandleOrDID ?? "");
-          setDid(data.did);
+          setDid((data as any).did);
         } else {
           setHandle(UNKNOWN_ERROR);
           setDid(UNKNOWN_ERROR);
@@ -113,7 +115,7 @@ function View() {
     if (did?.startsWith("did:plc:")) {
       rpc.get('com.atproto.repo.describeRepo', {
         params: {
-          repo: blueskyHandleOrDID ?? ""
+          repo: (blueskyHandleOrDID ?? "") as Handle
         }
       }).then((response) => {
         const { data } = response;
