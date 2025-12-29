@@ -152,7 +152,7 @@ export function useOAuth(options: UseOAuthOptions) {
   const [isInitializing, setIsInitializing] = useState(true)
   const [isLoginPopup, setIsLoginPopup] = useState(false)
 
-  const clientForInitRef = useRef<typeof clientForInit>()
+  const clientForInitRef = useRef<typeof clientForInit>(null)
   useEffect(() => {
     // In strict mode, we don't want to re-init() the client if it's the same
     if (clientForInitRef.current === clientForInit) return
@@ -174,7 +174,7 @@ export function useOAuth(options: UseOAuthOptions) {
             setSession(r.session)
 
             if ('state' in r) {
-              await onSignedIn(r.session, r.state)
+              await onSignedIn(r.session, r.state || "")
             } else {
               await onRestored(r.session)
             }

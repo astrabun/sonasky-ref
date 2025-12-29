@@ -24,6 +24,13 @@ const changelogData = [
             `Added changelog.`,
         ]
     },
+    {
+        version: '1.1.1',
+        date: dayjs(`2025-12-29`),
+        changes: [
+            `Improve support for alternate PDS users.`,
+        ]
+    },
 ];
 
 // get latest version by the highest semver version

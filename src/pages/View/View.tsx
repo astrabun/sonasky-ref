@@ -6,13 +6,13 @@ import { CredentialManager, Client } from '@atcute/client';
 import type {} from '@atcute/atproto';
 import type { ActorIdentifier, Handle } from '@atcute/lexicons';
 import { HANDLE_RESOLVER_URL } from '../../const';
+import { getPds } from '../../helpers/getPds';
 
 function View() {
 
   const UNKNOWN_ERROR = "INT__UNKNOWN_ERROR__INT";
 
   const manager = new CredentialManager({ service: HANDLE_RESOLVER_URL });
-  const rpc = new Client({ handler: manager });
 
   const { blueskyHandleOrDID } = useParams<{ blueskyHandleOrDID: string }>();
   const lookupMode = blueskyHandleOrDID?.startsWith('did:') ? 'did' : 'handle';
@@ -21,6 +21,23 @@ function View() {
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingText, setLoadingText] = useState<string>("Loading.");
   const [error, setError] = useState<boolean>(false);
+  const [altPds, setAltPds] = useState<string>(HANDLE_RESOLVER_URL);
+  const [rpc, setRpc] = useState<Client>(new Client({ handler: manager }));
+
+  const handleGetPds = async () => {
+    if(did){
+      const pds = await getPds(did);
+      if(HANDLE_RESOLVER_URL !== pds && pds){
+        setAltPds(pds);
+        const newRpc = new Client({ handler: new CredentialManager({ service: pds }) });
+        setRpc(newRpc);
+      }
+    }
+  };
+  
+  useEffect(() => {
+    handleGetPds();
+  }, [did])
 
   const [minLoadingTimePassed, setMinLoadingTimePassed] = useState<boolean>(false);
 
@@ -106,7 +123,7 @@ function View() {
         handleLookupError(error);
       })
     }
-  }, [blueskyHandleOrDID, minLoadingTimePassed]);
+  }, [blueskyHandleOrDID, minLoadingTimePassed, rpc]);
 
   useEffect(() => {
     if (error) {
@@ -122,7 +139,7 @@ function View() {
         setRepoData(data);
       })
     }
-  }, [handle, did]);
+  }, [handle, did, rpc]);
 
   useEffect(() => {
     if (loading) {
@@ -155,6 +172,9 @@ function View() {
               <a href={`https://bsky.app/profile/${handle}`} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "inherit" }}>
                 <Typography sx={{ typography: { sm: 'h2', xs: 'h4' } }}>@{handle}</Typography>
                 <Typography variant="caption" gutterBottom sx={{ marginLeft: "2rem" }}>{did}</Typography>
+                {altPds && <>
+                  <Typography variant="caption" gutterBottom sx={{ marginLeft: "2rem" }}>PDS: {altPds}</Typography>
+                </>}
               </a>
               <Divider sx={{ marginTop: "1rem", marginBottom: "1rem" }} />
               {sonaRecords !== undefined && <>
