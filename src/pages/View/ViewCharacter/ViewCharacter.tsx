@@ -9,6 +9,7 @@ import { HANDLE_RESOLVER_URL } from '../../../const';
 import NotFound from "../../NotFound";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { getPds } from '../../../helpers/getPds';
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
@@ -21,7 +22,7 @@ const Item = styled(Paper)(({ theme }) => ({
 
 export function ViewCharacter() {
   const manager = new CredentialManager({ service: HANDLE_RESOLVER_URL });
-  const rpc = new Client({ handler: manager });
+  const [rpc, setRpc] = useState<Client>(new Client({ handler: manager }));
   const { blueskyHandleOrDID, rkey } = useParams<{ blueskyHandleOrDID: string, rkey: string }>();
   const navigate = useNavigate();
   const [character, setCharacter] = useState<any | null>(null);
@@ -34,6 +35,20 @@ export function ViewCharacter() {
   const [showAltRef, setShowAltRef] = useState<boolean>(false);
 
   const [copyColorClicked, setCopyColorClicked] = useState<boolean>(false);
+
+  const handleGetPds = async () => {
+    if(blueskyHandleOrDID){
+      const pds = await getPds(blueskyHandleOrDID);
+      if(HANDLE_RESOLVER_URL !== pds && pds){
+        const newRpc = new Client({ handler: new CredentialManager({ service: pds }) });
+        setRpc(newRpc);
+      }
+    }
+  };
+  
+  useEffect(() => {
+    handleGetPds();
+  }, [blueskyHandleOrDID])
 
   const loadCharacter = useCallback(async () => {
     try {
@@ -55,7 +70,7 @@ export function ViewCharacter() {
     } finally {
       setLoading(false);
     }
-  }, [blueskyHandleOrDID, rkey]);
+  }, [blueskyHandleOrDID, rkey, rpc]);
 
   useEffect(() => {
     loadCharacter();
@@ -87,6 +102,7 @@ export function ViewCharacter() {
           setAltRefSheetImage(`https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split("/")[2]}/${cid}@jpeg`)
          })
       }
+      setError(false);
     }
   }, [character]);
 
