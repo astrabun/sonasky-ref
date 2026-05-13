@@ -42,6 +42,13 @@ const changelogData = [
         date: dayjs(`2026-05-13`),
         version: '1.3.0',
     },
+    {
+        changes: [
+            `HOTFIX: Increase blur on nsfw to make it harder to see through`,
+        ],
+        date: dayjs(`2026-05-13`),
+        version: '1.3.1',
+    },
 ];
 
 // Get latest version by the highest semver version

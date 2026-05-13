@@ -452,7 +452,7 @@ export function ViewCharacter() {
                     }}
                     sx={{
                         alignItems: 'center',
-                        backdropFilter: 'blur(12px)',
+                        backdropFilter: 'blur(50px)',
                         backgroundColor: 'rgba(0,0,0,0.6)',
                         bottom: 0,
                         display: 'flex',
