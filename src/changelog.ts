@@ -35,7 +35,10 @@ const changelogData = [
         version: '1.2.0',
     },
     {
-        changes: [`Add image index selection for ref sheets (in case the post has multiple images)`],
+        changes: [
+            `Add image index selection for ref sheets (in case the post has multiple images)`,
+            `Add blur + age warning dialog for ref sheets with NSFW tag applied.`,
+        ],
         date: dayjs(`2026-05-13`),
         version: '1.3.0',
     },
