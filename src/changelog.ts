@@ -1,5 +1,5 @@
-import dayjs from "dayjs";
-import { compare as semverCompare } from "semver";
+import dayjs from 'dayjs';
+import {compare as semverCompare} from 'semver';
 
 export interface ChangelogEntry {
     version: string;
@@ -9,41 +9,38 @@ export interface ChangelogEntry {
 
 const changelogData = [
     {
-        version: '1.0.0',
-        date: dayjs(`2025-01-12`),
         changes: [
             `Initial release of the application.`,
             `Added basic functionality for data manipulation and storage.`,
-        ]
+        ],
+        date: dayjs(`2025-01-12`),
+        version: '1.0.0',
     },
     {
-        version: '1.1.0',
-        date: dayjs(`2025-02-25`),
         changes: [
             `Combine Add and Edit character pages into a single re-usable component.`,
             `Added changelog.`,
-        ]
+        ],
+        date: dayjs(`2025-02-25`),
+        version: '1.1.0',
     },
     {
-        version: '1.1.1',
+        changes: [`Improve support for alternate PDS users.`],
         date: dayjs(`2025-12-29`),
-        changes: [
-            `Improve support for alternate PDS users.`,
-        ]
+        version: '1.1.1',
     },
     {
-        version: '1.2.0',
+        changes: [`Depdendency updates.`, `Quality of life updates.`],
         date: dayjs(`2026-05-13`),
-        changes: [
-            `Depdendency updates.`,
-            `Quality of life updates.`,
-        ]
+        version: '1.2.0',
     },
 ];
 
-// get latest version by the highest semver version
-const latestVersion = changelogData.reduce((latest, current) => {
-    return (semverCompare(current.version, latest.version) > 0 ? current : latest);
-}, changelogData[0]);
+// Get latest version by the highest semver version
+const latestVersion = changelogData.reduce(
+    (latest, current) =>
+        semverCompare(current.version, latest.version) > 0 ? current : latest,
+    changelogData[0],
+);
 
 export {changelogData, latestVersion};

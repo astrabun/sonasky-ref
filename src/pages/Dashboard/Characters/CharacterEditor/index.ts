@@ -1,3 +1,3 @@
-import CharacterEditor from "./CharacterEditor";
+import CharacterEditor from './CharacterEditor';
 
 export default CharacterEditor;

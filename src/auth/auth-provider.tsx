@@ -1,93 +1,99 @@
-'use client'
+'use client';
 
-import { Agent } from '@atproto/api'
-import { createContext, ReactNode, useContext, useMemo } from 'react'
+import type {Agent} from '@atproto/api';
+import type {ReactNode} from 'react';
+import {createContext, useContext, useMemo} from 'react';
 
-import { useCredentialAuth } from './credential/use-credential-auth'
-import { AuthForm } from './auth-form'
-import { useOAuth, UseOAuthOptions } from './oauth/use-oauth'
+import {useCredentialAuth} from './credential/use-credential-auth';
+import {AuthForm} from './auth-form';
+import type {UseOAuthOptions} from './oauth/use-oauth';
+import {useOAuth} from './oauth/use-oauth';
 
-export type AuthContext = {
-  pdsAgent: Agent
-  signOut: () => void
-  refresh: () => void
+export interface AuthContext {
+    pdsAgent: Agent;
+    signOut: () => void;
+    refresh: () => void;
 }
 
-const AuthContext = createContext<AuthContext | null>(null)
+const AuthContext = createContext<AuthContext | null>(null);
 
 export const AuthProvider = ({
-  children,
-  ...options
+    children,
+    ...options
 }: {
-  children: ReactNode
+    children: ReactNode;
 } & UseOAuthOptions) => {
-  const {
-    isLoginPopup,
-    isInitializing,
-    client: oauthClient,
-    agent: oauthAgent,
-    signIn: oauthSignIn,
-    signOut: oauthSignOut,
-    refresh: oauthRefresh,
-  } = useOAuth(options)
-
-  const {
-    agent: credentialAgent,
-    signIn: credentialSignIn,
-    signOut: credentialSignOut,
-    refresh: credentialRefresh,
-  } = useCredentialAuth()
-
-  const value = useMemo<AuthContext | null>(() => {
-    if (oauthAgent) {
-      return {
-        pdsAgent: oauthAgent,
+    const {
+        isLoginPopup,
+        isInitializing,
+        client: oauthClient,
+        agent: oauthAgent,
+        signIn: oauthSignIn,
         signOut: oauthSignOut,
         refresh: oauthRefresh,
-      }
-    }
+    } = useOAuth(options);
 
-    if (credentialAgent) {
-      return {
-        pdsAgent: credentialAgent,
+    const {
+        agent: credentialAgent,
+        signIn: credentialSignIn,
         signOut: credentialSignOut,
         refresh: credentialRefresh,
-      }
+    } = useCredentialAuth();
+
+    const value = useMemo<AuthContext | null>(() => {
+        if (oauthAgent) {
+            return {
+                pdsAgent: oauthAgent,
+                refresh: oauthRefresh,
+                signOut: oauthSignOut,
+            };
+        }
+
+        if (credentialAgent) {
+            return {
+                pdsAgent: credentialAgent,
+                refresh: credentialRefresh,
+                signOut: credentialSignOut,
+            };
+        }
+
+        return null;
+    }, [
+        oauthAgent,
+        oauthSignOut,
+        credentialAgent,
+        credentialSignOut,
+        oauthRefresh,
+        credentialRefresh,
+    ]);
+
+    if (isLoginPopup) {
+        return <div>This window can be closed</div>;
     }
 
-    return null
-  }, [
-    oauthAgent,
-    oauthSignOut,
-    credentialAgent,
-    credentialSignOut,
-    oauthRefresh,
-    credentialRefresh,
-  ])
+    if (isInitializing) {
+        return <div>Initializing...</div>;
+    }
 
-  if (isLoginPopup) {
-    return <div>This window can be closed</div>
-  }
+    if (!value) {
+        return (
+            <AuthForm
+                atpSignIn={credentialSignIn}
+                oauthSignIn={oauthClient ? oauthSignIn : undefined}
+            />
+        );
+    }
 
-  if (isInitializing) {
-    return <div>Initializing...</div>
-  }
-
-  if (!value) {
     return (
-      <AuthForm
-        atpSignIn={credentialSignIn}
-        oauthSignIn={oauthClient ? oauthSignIn : undefined}
-      />
-    )
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    );
+};
 
 export function useAuthContext(): AuthContext {
-  const context = useContext(AuthContext)
-  if (context) return context
+    const context = useContext(AuthContext);
+    if (context) {
+        return context;
+    }
 
-  throw new Error(`useAuthContext() must be used within an <AuthProvider />`)
+    throw new Error(`useAuthContext() must be used within an <AuthProvider />`);
 }

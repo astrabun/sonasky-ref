@@ -1,8 +1,8 @@
 .no-visited {
-  color: blue;
-  text-decoration: underline;
+    color: blue;
+    text-decoration: underline;
 }
 
 .no-visited:visited {
-  color: blue;
+    color: blue;
 }

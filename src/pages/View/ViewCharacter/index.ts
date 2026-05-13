@@ -1,3 +1,3 @@
-import { ViewCharacter } from "./ViewCharacter";
+import {ViewCharacter} from './ViewCharacter';
 
-export default ViewCharacter
+export default ViewCharacter;

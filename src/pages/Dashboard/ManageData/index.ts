@@ -1,3 +1,3 @@
-import { ManageData } from "./ManageData";
+import {ManageData} from './ManageData';
 
-export default ManageData
+export default ManageData;

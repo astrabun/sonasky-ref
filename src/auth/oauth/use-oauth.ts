@@ -1,269 +1,287 @@
-'use client'
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
-import { Agent } from '@atproto/api'
+import {Agent} from '@atproto/api';
+import type {
+    BrowserOAuthClientLoadOptions,
+    OAuthSession,
+} from '@atproto/oauth-client-browser';
 import {
-  BrowserOAuthClient,
-  BrowserOAuthClientLoadOptions,
-  LoginContinuedInParentWindowError,
-  OAuthSession,
-} from '@atproto/oauth-client-browser'
+    BrowserOAuthClient,
+    LoginContinuedInParentWindowError,
+} from '@atproto/oauth-client-browser';
 
-type Simplify<T> = { [K in keyof T]: T[K] } & NonNullable<unknown>
+type Simplify<T> = {[K in keyof T]: T[K]} & NonNullable<unknown>;
 
-export type OnRestored = (session: OAuthSession | null) => void
-export type OnSignedIn = (session: OAuthSession, state: null | string) => void
-export type OnSignedOut = () => void
+export type OnRestored = (session: OAuthSession | null) => void;
+export type OnSignedIn = (session: OAuthSession, state: null | string) => void;
+export type OnSignedOut = () => void;
 
-type OAuthSignIn = (input: string) => Promise<void>
+type OAuthSignIn = (input: string) => Promise<void>;
 
 function useValueRef<T>(value: T) {
-  const valueRef = useRef(value)
-  useEffect(() => {
-    valueRef.current = value
-  }, [value])
-  return valueRef
+    const valueRef = useRef(value);
+    useEffect(() => {
+        valueRef.current = value;
+    }, [value]);
+    return valueRef;
 }
 
 function useCallbackRef<T extends (this: any, ...args: any[]) => any>(
-  fn: T,
-): (this: ThisParameterType<T>, ...args: Parameters<T>) => ReturnType<T>
+    fn: T,
+): (this: ThisParameterType<T>, ...args: Parameters<T>) => ReturnType<T>;
 
 function useCallbackRef<T extends (this: any, ...args: any[]) => any>(
-  fn?: T,
-): (this: ThisParameterType<T>, ...args: Parameters<T>) => void | ReturnType<T>
+    fn?: T,
+): (this: ThisParameterType<T>, ...args: Parameters<T>) => void | ReturnType<T>;
 
 function useCallbackRef<T extends (this: any, ...args: any[]) => any>(fn?: T) {
-  const fnRef = useValueRef(fn)
-  return useCallback(function (
-    this: ThisParameterType<T>,
-    ...args: Parameters<T>
-  ): void | ReturnType<T> {
-    const { current } = fnRef
-    if (current) return current.call(this, ...args)
-  }, [])
+    const fnRef = useValueRef(fn);
+    return useCallback(function (
+        this: ThisParameterType<T>,
+        ...args: Parameters<T>
+    ): void | ReturnType<T> {
+        const {current} = fnRef;
+        if (current) {
+            return current.call(this, ...args);
+        }
+    }, []);
 }
 
 type ClientOptions =
-  | { client: BrowserOAuthClient }
-  | Simplify<
-      Pick<
-        BrowserOAuthClientLoadOptions,
-        | 'clientId'
-        | 'handleResolver'
-        | 'responseMode'
-        | 'plcDirectoryUrl'
-        | 'fetch'
-        | 'allowHttp'
-      >
-    >
+    | {client: BrowserOAuthClient}
+    | Simplify<
+          Pick<
+              BrowserOAuthClientLoadOptions,
+              | 'clientId'
+              | 'handleResolver'
+              | 'responseMode'
+              | 'plcDirectoryUrl'
+              | 'fetch'
+              | 'allowHttp'
+          >
+      >;
 
 function useOAuthClient(
-  options: ClientOptions,
-  onUpdate?: (sub: string) => void,
-  onDelete?: (sub: string) => void,
-): null | BrowserOAuthClient
+    options: ClientOptions,
+    onUpdate?: (sub: string) => void,
+    onDelete?: (sub: string) => void,
+): null | BrowserOAuthClient;
 function useOAuthClient(
-  options: Partial<
-    { client: BrowserOAuthClient } & BrowserOAuthClientLoadOptions
-  >,
-  onUpdate?: (sub: string) => void,
-  onDelete?: (sub: string) => void,
+    options: Partial<
+        {client: BrowserOAuthClient} & BrowserOAuthClientLoadOptions
+    >,
+    onUpdate?: (sub: string) => void,
+    onDelete?: (sub: string) => void,
 ) {
-  const {
-    client: clientInput,
-    clientId,
-    handleResolver,
-    responseMode,
-    plcDirectoryUrl,
-    allowHttp,
-  } = options
+    const {
+        client: clientInput,
+        clientId,
+        handleResolver,
+        responseMode,
+        plcDirectoryUrl,
+        allowHttp,
+    } = options;
 
-  const [client, setClient] = useState<null | BrowserOAuthClient>(
-    clientInput || null,
-  )
-  const fetch = useCallbackRef(options.fetch || globalThis.fetch)
+    const [client, setClient] = useState<null | BrowserOAuthClient>(
+        clientInput || null,
+    );
+    const fetch = useCallbackRef(options.fetch || globalThis.fetch);
 
-  useEffect(() => {
-    if (clientInput) {
-      setClient(clientInput)
-    } else if (clientId && handleResolver) {
-      const ac = new AbortController()
-      const { signal } = ac
+    useEffect(() => {
+        if (clientInput) {
+            setClient(clientInput);
+        } else if (clientId && handleResolver) {
+            const ac = new AbortController();
+            const {signal} = ac;
 
-      setClient(null)
+            setClient(null);
 
-      void BrowserOAuthClient.load({
+            void BrowserOAuthClient.load({
+                allowHttp,
+                clientId,
+                fetch,
+                handleResolver,
+                onDelete,
+                onUpdate,
+                plcDirectoryUrl,
+                responseMode,
+                signal,
+            }).then(
+                (client) => {
+                    if (!signal.aborted) {
+                        signal.addEventListener(
+                            'abort',
+                            () => {
+                                void client[Symbol.asyncDispose]();
+                            },
+                            {once: true},
+                        );
+                        setClient(client);
+                    } else {
+                        void client[Symbol.asyncDispose]();
+                    }
+                },
+                (error) => {
+                    if (!signal.aborted) {
+                        throw error;
+                    }
+                },
+            );
+
+            return () => ac.abort();
+        } else {
+            setClient(null);
+        }
+    }, [
+        clientInput,
         clientId,
         handleResolver,
         responseMode,
         plcDirectoryUrl,
         fetch,
-        allowHttp,
-        signal,
-        onUpdate,
-        onDelete,
-      }).then(
-        (client) => {
-          if (!signal.aborted) {
-            signal.addEventListener(
-              'abort',
-              () => {
-                void client[Symbol.asyncDispose]()
-              },
-              { once: true },
-            )
-            setClient(client)
-          } else {
-            void client[Symbol.asyncDispose]()
-          }
-        },
-        (err) => {
-          if (!signal.aborted) throw err
-        },
-      )
+    ]);
 
-      return () => ac.abort()
-    } else {
-      setClient(null)
-    }
-  }, [
-    clientInput,
-    clientId,
-    handleResolver,
-    responseMode,
-    plcDirectoryUrl,
-    fetch,
-  ])
-
-  return client
+    return client;
 }
 
 export type UseOAuthOptions = ClientOptions & {
-  onRestored?: OnRestored
-  onSignedIn?: OnSignedIn
-  onSignedOut?: OnSignedOut
+    onRestored?: OnRestored;
+    onSignedIn?: OnSignedIn;
+    onSignedOut?: OnSignedOut;
 
-  state?: string
-  scope?: string
-}
+    state?: string;
+    scope?: string;
+};
 
 export function useOAuth(options: UseOAuthOptions) {
-  const onRestored = useCallbackRef(options.onRestored)
-  const onSignedIn = useCallbackRef(options.onSignedIn)
-  const onSignedOut = useCallbackRef(options.onSignedOut)
+    const onRestored = useCallbackRef(options.onRestored);
+    const onSignedIn = useCallbackRef(options.onSignedIn);
+    const onSignedOut = useCallbackRef(options.onSignedOut);
 
-  const scopeRef = useValueRef(options.scope)
-  const stateRef = useValueRef(options.state)
+    const scopeRef = useValueRef(options.scope);
+    const stateRef = useValueRef(options.state);
 
-  const [session, setSession] = useState<null | OAuthSession>(null)
-  const [client, setClient] = useState<BrowserOAuthClient | null>(null)
-  const [isInitializing, setIsInitializing] = useState(true)
-  const [isLoginPopup, setIsLoginPopup] = useState(false)
+    const [session, setSession] = useState<null | OAuthSession>(null);
+    const [client, setClient] = useState<BrowserOAuthClient | null>(null);
+    const [isInitializing, setIsInitializing] = useState(true);
+    const [isLoginPopup, setIsLoginPopup] = useState(false);
 
-  // Refs so that onUpdate/onDelete callbacks (baked into the client at
-  // construction time) always see the latest session and client values.
-  const sessionRef = useValueRef(session)
-  const clientRef = useValueRef(client)
+    // Refs so that onUpdate/onDelete callbacks (baked into the client at
+    // Construction time) always see the latest session and client values.
+    const sessionRef = useValueRef(session);
+    const clientRef = useValueRef(client);
 
-  // Stable callbacks passed to BrowserOAuthClient at construction time.
-  // The new API (oauth-client >= 0.6) removed addEventListener in favour of
-  // these constructor-time hooks.
-  const onSessionUpdate = useCallbackRef((sub: string) => {
-    const currentClient = clientRef.current
-    const currentSession = sessionRef.current
-    if (currentClient && (!currentSession || currentSession.sub !== sub)) {
-      setSession(null)
-      currentClient.restore(sub, false).then(setSession)
-    }
-  })
+    // Stable callbacks passed to BrowserOAuthClient at construction time.
+    // The new API (oauth-client >= 0.6) removed addEventListener in favour of
+    // These constructor-time hooks.
+    const onSessionUpdate = useCallbackRef((sub: string) => {
+        const currentClient = clientRef.current;
+        const currentSession = sessionRef.current;
+        if (currentClient && (!currentSession || currentSession.sub !== sub)) {
+            setSession(null);
+            currentClient.restore(sub, false).then(setSession);
+        }
+    });
 
-  const onSessionDelete = useCallbackRef((sub: string) => {
-    if (sessionRef.current?.sub === sub) {
-      setSession(null)
-      void onSignedOut()
-    }
-  })
+    const onSessionDelete = useCallbackRef((sub: string) => {
+        if (sessionRef.current?.sub === sub) {
+            setSession(null);
+            onSignedOut();
+        }
+    });
 
-  const clientForInit = useOAuthClient(options, onSessionUpdate, onSessionDelete)
+    const clientForInit = useOAuthClient(
+        options,
+        onSessionUpdate,
+        onSessionDelete,
+    );
 
-  const clientForInitRef = useRef<typeof clientForInit>(null)
-  useEffect(() => {
-    // In strict mode, we don't want to re-init() the client if it's the same
-    if (clientForInitRef.current === clientForInit) return
-    clientForInitRef.current = clientForInit
+    const clientForInitRef = useRef<typeof clientForInit>(null);
+    useEffect(() => {
+        // In strict mode, we don't want to re-init() the client if it's the same
+        if (clientForInitRef.current === clientForInit) {
+            return;
+        }
+        clientForInitRef.current = clientForInit;
 
-    setSession(null)
-    setClient(null)
-    setIsLoginPopup(false)
-    setIsInitializing(clientForInit != null)
+        setSession(null);
+        setClient(null);
+        setIsLoginPopup(false);
+        setIsInitializing(clientForInit != null);
 
-    clientForInit
-      ?.init()
-      .then(
-        async (r) => {
-          if (clientForInitRef.current !== clientForInit) return
+        clientForInit
+            ?.init()
+            .then(
+                async (r) => {
+                    if (clientForInitRef.current !== clientForInit) {
+                        return;
+                    }
 
-          setClient(clientForInit)
-          if (r) {
-            setSession(r.session)
+                    setClient(clientForInit);
+                    if (r) {
+                        setSession(r.session);
 
-            if ('state' in r) {
-              await onSignedIn(r.session, r.state || "")
-            } else {
-              await onRestored(r.session)
+                        if ('state' in r) {
+                            await onSignedIn(r.session, r.state || '');
+                        } else {
+                            await onRestored(r.session);
+                        }
+                    } else {
+                        await onRestored(null);
+                    }
+                },
+                async (error) => {
+                    if (clientForInitRef.current !== clientForInit) {
+                        return;
+                    }
+                    if (error instanceof LoginContinuedInParentWindowError) {
+                        setIsLoginPopup(true);
+                        return;
+                    }
+
+                    setClient(clientForInit);
+                    await onRestored(null);
+
+                    console.error('Failed to init:', error);
+                },
+            )
+            .finally(() => {
+                if (clientForInitRef.current !== clientForInit) {
+                    return;
+                }
+
+                setIsInitializing(false);
+            });
+    }, [clientForInit, onSignedIn, onRestored]);
+
+    const signIn = useCallback<OAuthSignIn>(
+        async (input) => {
+            if (!client) {
+                throw new Error('Client not initialized');
             }
-          } else {
-            await onRestored(null)
-          }
+            const state = stateRef.current;
+            const scope = scopeRef.current;
+            const session = await client.signIn(input, {scope, state});
+            setSession(session);
+            await onSignedIn(session, state ?? null);
         },
-        async (err) => {
-          if (clientForInitRef.current !== clientForInit) return
-          if (err instanceof LoginContinuedInParentWindowError) {
-            setIsLoginPopup(true)
-            return
-          }
+        [client, onSignedIn],
+    );
 
-          setClient(clientForInit)
-          await onRestored(null)
-
-          console.error('Failed to init:', err)
-        },
-      )
-      .finally(() => {
-        if (clientForInitRef.current !== clientForInit) return
-
-        setIsInitializing(false)
-      })
-  }, [clientForInit, onSignedIn, onRestored])
-
-  const signIn = useCallback<OAuthSignIn>(
-    async (input) => {
-      if (!client) throw new Error('Client not initialized')
-      const state = stateRef.current
-      const scope = scopeRef.current
-      const session = await client.signIn(input, { scope, state })
-      setSession(session)
-      await onSignedIn(session, state ?? null)
-    },
-    [client, onSignedIn],
-  )
-
-  // Memoize the return value to avoid re-renders in consumers
-  return useMemo(
-    () => ({
-      isInitializing,
-      isInitialized: client != null,
-      isLoginPopup,
-
-      signIn,
-      signOut: () => session?.signOut(),
-      refresh: () => session?.getTokenInfo(true),
-
-      client,
-      agent: session ? new Agent(session) : null,
-    }),
-    [isInitializing, isLoginPopup, session, client, signIn],
-  )
+    // Memoize the return value to avoid re-renders in consumers
+    return useMemo(
+        () => ({
+            agent: session ? new Agent(session) : null,
+            client,
+            isInitialized: client != null,
+            isInitializing,
+            isLoginPopup,
+            refresh: () => session?.getTokenInfo(true),
+            signIn,
+            signOut: () => session?.signOut(),
+        }),
+        [isInitializing, isLoginPopup, session, client, signIn],
+    );
 }
