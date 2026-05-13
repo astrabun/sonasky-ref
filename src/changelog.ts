@@ -34,6 +34,11 @@ const changelogData = [
         date: dayjs(`2026-05-13`),
         version: '1.2.0',
     },
+    {
+        changes: [`Add image index selection for ref sheets (in case the post has multiple images)`],
+        date: dayjs(`2026-05-13`),
+        version: '1.3.0',
+    },
 ];
 
 // Get latest version by the highest semver version

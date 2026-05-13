@@ -111,8 +111,11 @@ export function ViewCharacter() {
                     })
                     .then((response) => {
                         const {data} = response;
-                        const cid = ((data as any).value as any).embed.images[0]
-                            .image.ref.$link;
+                        const {images} = ((data as any).value as any).embed;
+                        const imageIndex = character.refSheetImageIndex ?? 0;
+                        const cid =
+                            images[imageIndex]?.image.ref.$link ??
+                            images[0].image.ref.$link;
                         setRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split('/')[2]}/${cid}@jpeg`,
                         );
@@ -130,8 +133,11 @@ export function ViewCharacter() {
                     })
                     .then((response) => {
                         const {data} = response;
-                        const cid = ((data as any).value as any).embed.images[0]
-                            .image.ref.$link;
+                        const {images} = ((data as any).value as any).embed;
+                        const imageIndex = character.altRefImageIndex ?? 0;
+                        const cid =
+                            images[imageIndex]?.image.ref.$link ??
+                            images[0].image.ref.$link;
                         setAltRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split('/')[2]}/${cid}@jpeg`,
                         );

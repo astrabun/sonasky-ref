@@ -4,7 +4,9 @@ export interface Character {
     colors?: {label: string; hex: string}[]; // Optional, max array length 16, label max length 64, hex length 6
     pronouns?: string; // Optional, max length 32 characters
     refSheet?: string; // Optional, ref to a app.bsky.feed.post
+    refSheetImageIndex?: number; // Optional, index of image in refSheet post
     altRef?: string; // Optional, ref to a app.bsky.feed.post
+    altRefImageIndex?: number; // Optional, index of image in altRef post
     drawWithoutAskingSFW?: boolean; // Optional
     drawWithoutAskingNSFW?: boolean; // Optional
     nsfw?: boolean; // Optional
@@ -17,7 +19,9 @@ export const CharacterTypeKeys = [
     'colors',
     'pronouns',
     'refSheet',
+    'refSheetImageIndex',
     'altRef',
+    'altRefImageIndex',
     'drawWithoutAskingSFW',
     'drawWithoutAskingNSFW',
     'nsfw',
