@@ -66,7 +66,7 @@ export function ViewCharacter() {
     };
 
     useEffect(() => {
-        handleGetPds();
+        void handleGetPds();
     }, [blueskyHandleOrDID]);
 
     const loadCharacter = useCallback(async () => {
@@ -94,14 +94,14 @@ export function ViewCharacter() {
     }, [blueskyHandleOrDID, rkey, rpc]);
 
     useEffect(() => {
-        loadCharacter();
+        void loadCharacter();
     }, [loadCharacter]);
 
     useEffect(() => {
         if (character) {
             if (character.refSheet && character.refSheet.startsWith('at://')) {
                 const [,, refSheetDid] = character.refSheet.split('/');
-                rpc.get('com.atproto.repo.getRecord', {
+                void rpc.get('com.atproto.repo.getRecord', {
                     params: {
                         collection: 'app.bsky.feed.post',
                         repo: refSheetDid,
@@ -118,7 +118,7 @@ export function ViewCharacter() {
             }
             if (character.altRef && character.altRef.startsWith('at://')) {
                 const [,, altRefDid] = character.altRef.split('/');
-                rpc.get('com.atproto.repo.getRecord', {
+                void rpc.get('com.atproto.repo.getRecord', {
                     params: {
                         collection: 'app.bsky.feed.post',
                         repo: altRefDid,
@@ -311,7 +311,7 @@ export function ViewCharacter() {
                                                             textAlign: 'left',
                                                         }}
                                                         onClick={() => {
-                                                            navigator.clipboard.writeText(
+                                                            void navigator.clipboard.writeText(
                                                                 `#${color.hex}`,
                                                             );
                                                             handleCopyClick();

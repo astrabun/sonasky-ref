@@ -28,7 +28,7 @@ function Home() {
             handle.startsWith('did:plc:') || handle.includes('.')
                 ? handle
                 : `${handle}.bsky.social`;
-        navigate(`/profile/${finalHandle}`);
+        void navigate(`/profile/${finalHandle}`);
     };
 
     return (

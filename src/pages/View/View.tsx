@@ -48,7 +48,7 @@ function View() {
     };
 
     useEffect(() => {
-        handleGetPds();
+        void handleGetPds();
     }, [did]);
 
     const [minLoadingTimePassed, setMinLoadingTimePassed] =
@@ -72,7 +72,7 @@ function View() {
         }
     }, [repoData]);
     useEffect(() => {
-        loadSonaRecords();
+        void loadSonaRecords();
     }, [repoData]);
 
     const transitionTime = 2000;
@@ -149,7 +149,7 @@ function View() {
             return;
         }
         if (did?.startsWith('did:plc:')) {
-            rpc.get('com.atproto.repo.describeRepo', {
+            void rpc.get('com.atproto.repo.describeRepo', {
                 params: {
                     repo: (blueskyHandleOrDID ?? '') as Handle,
                 },

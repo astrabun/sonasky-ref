@@ -29,7 +29,7 @@ export function ManageData() {
         setSonaRecords(sonaRecords.data.records);
     }, [pdsAgent]);
     useEffect(() => {
-        loadSonaRecords();
+        void loadSonaRecords();
     }, [pdsAgent]);
 
     const handleClickOpen = () => {

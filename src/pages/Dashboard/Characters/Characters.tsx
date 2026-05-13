@@ -22,7 +22,7 @@ export function Characters() {
         setSonaRecords(sonaRecords.data.records);
     }, [pdsAgent]);
     useEffect(() => {
-        loadSonaRecords();
+        void loadSonaRecords();
     }, [pdsAgent]);
     return (
         <Layout>

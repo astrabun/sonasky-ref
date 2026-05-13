@@ -26,7 +26,7 @@ export function useCredentialAuth() {
         }
 
         const agent = createAgent(prev.service);
-        agent.resumeSession(prev);
+        void agent.resumeSession(prev);
         return agent;
     });
 

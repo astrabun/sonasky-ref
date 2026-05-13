@@ -83,7 +83,7 @@ function CharacterEditor(props: CharacterEditorProps) {
     useEffect(() => {
         // LoadCharacter(); // only do this if editMode
         if (editMode) {
-            loadCharacter();
+            void loadCharacter();
         }
     }, [editMode, loadCharacter]);
 
@@ -169,7 +169,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                     rkey,
                     validate: false,
                 });
-                navigate('/dashboard/characters'); // Navigate to the character list
+                void navigate('/dashboard/characters'); // Navigate to the character list
             } catch (error) {
                 console.error('Failed to add new SonaSky REF record', error);
             }
@@ -219,7 +219,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                     rkey: rkey as string,
                     validate: false,
                 });
-                navigate('/dashboard/characters'); // Navigate to the character list
+                void navigate('/dashboard/characters'); // Navigate to the character list
             } catch (error) {
                 console.error('Failed to update SonaSky REF record', error);
             }
@@ -353,7 +353,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                 repo: pdsAgent.assertDid,
                 rkey: rkey as string,
             });
-            navigate('/dashboard/characters'); // Navigate to the character list
+            void navigate('/dashboard/characters'); // Navigate to the character list
         } catch (error) {
             console.error('Failed to delete character', error);
         }

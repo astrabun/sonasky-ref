@@ -12,8 +12,8 @@ import {
 
 type Simplify<T> = {[K in keyof T]: T[K]} & NonNullable<unknown>;
 
-export type OnRestored = (session: OAuthSession | undefined) => void;
-export type OnSignedIn = (session: OAuthSession, state: string | undefined) => void;
+export type OnRestored = (session: OAuthSession | undefined) => void | Promise<void>;
+export type OnSignedIn = (session: OAuthSession, state: string | undefined) => void | Promise<void>;
 export type OnSignedOut = () => void;
 
 type OAuthSignIn = (input: string) => Promise<void>;
@@ -179,7 +179,7 @@ export function useOAuth(options: UseOAuthOptions) {
         const currentSession = sessionRef.current;
         if (currentClient && (!currentSession || currentSession.sub !== sub)) {
             setSession(undefined);
-            currentClient.restore(sub, false).then(setSession);
+            void currentClient.restore(sub, false).then(setSession);
         }
     });
 

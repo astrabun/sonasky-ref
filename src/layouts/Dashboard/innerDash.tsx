@@ -23,7 +23,7 @@ function InnerDashLayout(props: LayoutProps) {
     }, [pdsAgent]);
 
     useEffect(() => {
-        loadProfile();
+        void loadProfile();
     }, [pdsAgent]);
 
     const [sonaRecords, setSonaRecords] = useState<any>();
@@ -35,7 +35,7 @@ function InnerDashLayout(props: LayoutProps) {
         setSonaRecords(sonaRecords.data.records);
     }, [pdsAgent]);
     useEffect(() => {
-        loadSonaRecords();
+        void loadSonaRecords();
     }, [pdsAgent]);
 
     const location = useLocation();
