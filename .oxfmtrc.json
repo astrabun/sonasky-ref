@@ -9,5 +9,5 @@
   "insertFinalNewline": true,
   "singleAttributePerLine": true,
   "bracketSpacing": false,
-  "ignorePatterns": ["packages/*/dist/**", "packages/*/.wrangler/**"]
+  "ignorePatterns": ["dist/**"]
 }
