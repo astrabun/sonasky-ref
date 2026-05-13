@@ -52,6 +52,8 @@ export function ViewCharacter() {
     const [showAltRef, setShowAltRef] = useState<boolean>(false);
 
     const [copyColorClicked, setCopyColorClicked] = useState<boolean>(false);
+    const [nsfwBlurred, setNsfwBlurred] = useState<boolean>(false);
+    const [nsfwFadingOut, setNsfwFadingOut] = useState<boolean>(false);
 
     const handleGetPds = async () => {
         if (blueskyHandleOrDID) {
@@ -111,8 +113,11 @@ export function ViewCharacter() {
                     })
                     .then((response) => {
                         const {data} = response;
-                        const cid = ((data as any).value as any).embed.images[0]
-                            .image.ref.$link;
+                        const {images} = ((data as any).value as any).embed;
+                        const imageIndex = character.refSheetImageIndex ?? 0;
+                        const cid =
+                            images[imageIndex]?.image.ref.$link ??
+                            images[0].image.ref.$link;
                         setRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split('/')[2]}/${cid}@jpeg`,
                         );
@@ -130,8 +135,11 @@ export function ViewCharacter() {
                     })
                     .then((response) => {
                         const {data} = response;
-                        const cid = ((data as any).value as any).embed.images[0]
-                            .image.ref.$link;
+                        const {images} = ((data as any).value as any).embed;
+                        const imageIndex = character.altRefImageIndex ?? 0;
+                        const cid =
+                            images[imageIndex]?.image.ref.$link ??
+                            images[0].image.ref.$link;
                         setAltRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split('/')[2]}/${cid}@jpeg`,
                         );
@@ -140,6 +148,37 @@ export function ViewCharacter() {
             setError(false);
         }
     }, [character]);
+
+    useEffect(() => {
+        if (!character?.nsfw) {
+            return;
+        }
+        const key = `nsfw-confirm:${globalThis.location.pathname}`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            const ts = parseInt(stored, 10);
+            if (Date.now() - ts < 30 * 24 * 60 * 60 * 1000) {
+                return;
+            }
+        }
+        setNsfwBlurred(true);
+    }, [character]);
+
+    const handleNsfwConfirm = () => {
+        localStorage.setItem(
+            `nsfw-confirm:${globalThis.location.pathname}`,
+            Date.now().toString(),
+        );
+        setNsfwFadingOut(true);
+    };
+
+    const handleNsfwGoBack = () => {
+        if (globalThis.history.length > 1) {
+            void navigate(-1);
+        } else {
+            void navigate('/');
+        }
+    };
 
     useEffect(() => {
         if (loading) {
@@ -404,6 +443,70 @@ export function ViewCharacter() {
                     </div>
                 </Fade>
             </Container>
+            {nsfwBlurred && (
+                <Box
+                    onTransitionEnd={() => {
+                        if (nsfwFadingOut) {
+                            setNsfwBlurred(false);
+                        }
+                    }}
+                    sx={{
+                        alignItems: 'center',
+                        backdropFilter: 'blur(12px)',
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        bottom: 0,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        left: 0,
+                        opacity: nsfwFadingOut ? 0 : 1,
+                        position: 'fixed',
+                        right: 0,
+                        top: 0,
+                        transition: 'opacity 0.6s ease',
+                        zIndex: 9999,
+                    }}
+                >
+                    <Paper
+                        elevation={6}
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 2,
+                            maxWidth: 420,
+                            mx: 2,
+                            p: 4,
+                            textAlign: 'center',
+                        }}
+                    >
+                        <Typography variant="h5">NSFW Content</Typography>
+                        <Typography variant="body1">
+                            This character is marked as NSFW. You must be 18
+                            years of age or older to view this content.
+                        </Typography>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 2,
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleNsfwConfirm}
+                            >
+                                I'm 18+ | Continue
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                onClick={handleNsfwGoBack}
+                            >
+                                Go Back
+                            </Button>
+                        </Box>
+                    </Paper>
+                </Box>
+            )}
         </Layout>
     );
 }

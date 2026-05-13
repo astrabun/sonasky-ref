@@ -67,6 +67,31 @@ function CharacterEditor(props: CharacterEditorProps) {
     const [editingColorIndex, setEditingColorIndex] = useState<
         number | undefined
     >();
+    const [refSheetImages, setRefSheetImages] = useState<string[]>([]);
+    const [altRefImages, setAltRefImages] = useState<string[]>([]);
+
+    const fetchPostImages = useCallback(
+        async (atUri: string): Promise<string[]> => {
+            try {
+                const [, , did, , postRkey] = atUri.split('/');
+                const response = await pdsAgent.com.atproto.repo.getRecord({
+                    collection: 'app.bsky.feed.post',
+                    repo: did,
+                    rkey: postRkey,
+                });
+                const {embed} = response.data.value as any;
+                if (embed?.images) {
+                    return embed.images.map((img: any) =>
+                        img.image.ref.toString(),
+                    );
+                }
+            } catch {
+                // Post may not be accessible; silently skip preview
+            }
+            return [];
+        },
+        [pdsAgent],
+    );
 
     const loadCharacter = useCallback(async () => {
         try {
@@ -75,12 +100,19 @@ function CharacterEditor(props: CharacterEditorProps) {
                 repo: pdsAgent.assertDid,
                 rkey: rkey as string,
             });
-            setCharacter((record.data.value as any).character);
+            const char = (record.data.value as any).character;
+            setCharacter(char);
             setCreatedAt((record.data.value as any).createdAt);
+            if (char.refSheet?.startsWith('at://')) {
+                setRefSheetImages(await fetchPostImages(char.refSheet));
+            }
+            if (char.altRef?.startsWith('at://')) {
+                setAltRefImages(await fetchPostImages(char.altRef));
+            }
         } catch (error) {
             console.error('Failed to load character', error);
         }
-    }, [pdsAgent, rkey]);
+    }, [pdsAgent, rkey, fetchPostImages]);
 
     useEffect(() => {
         // LoadCharacter(); // only do this if editMode
@@ -116,9 +148,25 @@ function CharacterEditor(props: CharacterEditorProps) {
         const {name, value, type, checked} = e.target;
         if (name === 'refSheet' || name === 'altRef') {
             const atUri = await handleAtProtoRefImage(value);
+            const indexKey =
+                name === 'refSheet' ? 'refSheetImageIndex' : 'altRefImageIndex';
             setCharacter((prev) =>
-                prev ? {...prev, [name]: atUri} : undefined,
+                prev ? {...prev, [name]: atUri, [indexKey]: 0} : undefined,
             );
+            if (atUri.startsWith('at://')) {
+                const images = await fetchPostImages(atUri);
+                if (name === 'refSheet') {
+                    setRefSheetImages(images);
+                } else {
+                    setAltRefImages(images);
+                }
+            } else {
+                if (name === 'refSheet') {
+                    setRefSheetImages([]);
+                } else {
+                    setAltRefImages([]);
+                }
+            }
             return;
         }
         setCharacter((prev) =>
@@ -525,46 +573,159 @@ function CharacterEditor(props: CharacterEditorProps) {
                         margin="normal"
                         inputProps={{maxLength: 32}}
                     />
-                    <Box sx={{alignItems: 'center', display: 'flex'}}>
-                        <TextField
-                            label="Ref Sheet Post on Bluesky (URL)"
-                            name="refSheet"
-                            value={character.refSheet}
-                            onChange={handleChange}
-                            margin="normal"
-                            fullWidth
-                        />
-                        {character.refSheet?.startsWith('at://') && (
-                            <IconButton
-                                component="a"
-                                href={getBlueskyLink(character.refSheet)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{marginLeft: 1}}
+                    <Box>
+                        <Box sx={{alignItems: 'center', display: 'flex'}}>
+                            <TextField
+                                label="Ref Sheet Post on Bluesky (URL)"
+                                name="refSheet"
+                                value={character.refSheet}
+                                onChange={handleChange}
+                                margin="normal"
+                                fullWidth
+                            />
+                            {character.refSheet?.startsWith('at://') && (
+                                <IconButton
+                                    component="a"
+                                    href={getBlueskyLink(character.refSheet)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{marginLeft: 1}}
+                                >
+                                    <OpenInNewIcon />
+                                </IconButton>
+                            )}
+                        </Box>
+                        {refSheetImages.length > 0 && (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    mt: 1,
+                                }}
                             >
-                                <OpenInNewIcon />
-                            </IconButton>
+                                {refSheetImages.map((cid, index) => {
+                                    const did =
+                                        character.refSheet?.split('/')[2];
+                                    const isSelected =
+                                        (character.refSheetImageIndex ?? 0) ===
+                                        index;
+                                    return (
+                                        <Box
+                                            key={cid}
+                                            sx={{
+                                                border: '3px solid',
+                                                borderColor: isSelected
+                                                    ? 'primary.main'
+                                                    : 'transparent',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                height: '80px',
+                                                overflow: 'hidden',
+                                                width: '80px',
+                                            }}
+                                            onClick={() =>
+                                                setCharacter((prev) =>
+                                                    prev
+                                                        ? {
+                                                              ...prev,
+                                                              refSheetImageIndex:
+                                                                  index,
+                                                          }
+                                                        : undefined,
+                                                )
+                                            }
+                                        >
+                                            <img
+                                                src={`https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${cid}@jpeg`}
+                                                alt={`Image ${index + 1}`}
+                                                style={{
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    width: '100%',
+                                                }}
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
                         )}
                     </Box>
-                    <Box sx={{alignItems: 'center', display: 'flex'}}>
-                        <TextField
-                            label="Alt Ref Post on Bluesky (URL)"
-                            name="altRef"
-                            value={character.altRef}
-                            onChange={handleChange}
-                            margin="normal"
-                            fullWidth
-                        />
-                        {character.altRef?.startsWith('at://') && (
-                            <IconButton
-                                component="a"
-                                href={getBlueskyLink(character.altRef)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{marginLeft: 1}}
+                    <Box>
+                        <Box sx={{alignItems: 'center', display: 'flex'}}>
+                            <TextField
+                                label="Alt Ref Post on Bluesky (URL)"
+                                name="altRef"
+                                value={character.altRef}
+                                onChange={handleChange}
+                                margin="normal"
+                                fullWidth
+                            />
+                            {character.altRef?.startsWith('at://') && (
+                                <IconButton
+                                    component="a"
+                                    href={getBlueskyLink(character.altRef)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{marginLeft: 1}}
+                                >
+                                    <OpenInNewIcon />
+                                </IconButton>
+                            )}
+                        </Box>
+                        {altRefImages.length > 0 && (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
+                                    mt: 1,
+                                }}
                             >
-                                <OpenInNewIcon />
-                            </IconButton>
+                                {altRefImages.map((cid, index) => {
+                                    const did = character.altRef?.split('/')[2];
+                                    const isSelected =
+                                        (character.altRefImageIndex ?? 0) ===
+                                        index;
+                                    return (
+                                        <Box
+                                            key={cid}
+                                            sx={{
+                                                border: '3px solid',
+                                                borderColor: isSelected
+                                                    ? 'primary.main'
+                                                    : 'transparent',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                height: '80px',
+                                                overflow: 'hidden',
+                                                width: '80px',
+                                            }}
+                                            onClick={() =>
+                                                setCharacter((prev) =>
+                                                    prev
+                                                        ? {
+                                                              ...prev,
+                                                              altRefImageIndex:
+                                                                  index,
+                                                          }
+                                                        : undefined,
+                                                )
+                                            }
+                                        >
+                                            <img
+                                                src={`https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${cid}@jpeg`}
+                                                alt={`Image ${index + 1}`}
+                                                style={{
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    width: '100%',
+                                                }}
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
                         )}
                     </Box>
                     <DndProvider backend={HTML5Backend}>
