@@ -1,5 +1,4 @@
-import type {AtpSessionData} from '@atproto/api';
-import {AtpAgent} from '@atproto/api';
+import {type AtpSessionData, AtpAgent} from '@atproto/api';
 import {useCallback, useMemo, useState} from 'react';
 
 type Session = AtpSessionData & {service: string};
@@ -11,7 +10,7 @@ export function useCredentialAuth() {
                 if (session) {
                     saveSession({...session, service});
                 } else {
-                    setAgent((a) => (a === agent ? null : a));
+                    setAgent((a) => (a === agent ? undefined : a));
                     deleteSession();
                 }
             },
@@ -20,10 +19,10 @@ export function useCredentialAuth() {
         return agent;
     }, []);
 
-    const [agent, setAgent] = useState<null | AtpAgent>(() => {
+    const [agent, setAgent] = useState<AtpAgent | undefined>(() => {
         const prev = loadSession();
         if (!prev) {
-            return null;
+            return undefined;
         }
 
         const agent = createAgent(prev.service);

@@ -26,8 +26,8 @@ function View() {
     const lookupMode = blueskyHandleOrDID?.startsWith('did:')
         ? 'did'
         : 'handle';
-    const [handle, setHandle] = useState<string | null>(null);
-    const [did, setDid] = useState<string | null>(null);
+    const [handle, setHandle] = useState<string | undefined>();
+    const [did, setDid] = useState<string | undefined>();
     const [loading, setLoading] = useState<boolean>(true);
     const [loadingText, setLoadingText] = useState<string>('Loading.');
     const [error, setError] = useState<boolean>(false);
@@ -54,8 +54,8 @@ function View() {
     const [minLoadingTimePassed, setMinLoadingTimePassed] =
         useState<boolean>(false);
 
-    const [repoData, setRepoData] = useState<any | null>(null);
-    const [sonaRecords, setSonaRecords] = useState<any | null>(null);
+    const [repoData, setRepoData] = useState<any>();
+    const [sonaRecords, setSonaRecords] = useState<any>();
     const loadSonaRecords = useCallback(async () => {
         if (did) {
             await rpc

@@ -1,6 +1,5 @@
 import type {AuthorizeOptions} from '@atproto/oauth-client-browser';
-import type {FormEvent} from 'react';
-import {useCallback, useState} from 'react';
+import {type FormEvent, useCallback, useState} from 'react';
 import Header from '../../assets/partials/Header';
 import {
     Alert,
@@ -27,7 +26,7 @@ export function DEMO_OAuthSignInForm({
     signIn: OAuthSignIn;
 } & Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit'>) {
     const [value, setValue] = useState('');
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
 
     const onSubmit = useCallback(
@@ -37,7 +36,7 @@ export function DEMO_OAuthSignInForm({
                 return;
             }
 
-            setError(null);
+            setError(undefined);
             setLoading(true);
 
             try {
@@ -109,7 +108,7 @@ export function DEMO_OAuthSignInForm({
                 </div>
             </fieldset>
 
-            {error ? <div className="alert alert-error">{error}</div> : null}
+            {error && <div className="alert alert-error">{error}</div>}
         </form>
     );
 }
@@ -121,7 +120,7 @@ export function OAuthSignInForm({
     signIn: OAuthSignIn;
 } & Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit'>) {
     const [value, setValue] = useState('');
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
 
     const onSubmit = useCallback(
@@ -131,7 +130,7 @@ export function OAuthSignInForm({
                 return;
             }
 
-            setError(null);
+            setError(undefined);
             setLoading(true);
 
             try {

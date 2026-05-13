@@ -10,7 +10,7 @@ function Logout() {
         signOut();
     }, [signOut, navigate]);
 
-    return null;
+    return <></>;
 }
 
 export default Logout;

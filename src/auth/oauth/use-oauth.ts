@@ -3,19 +3,17 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {Agent} from '@atproto/api';
-import type {
-    BrowserOAuthClientLoadOptions,
-    OAuthSession,
-} from '@atproto/oauth-client-browser';
 import {
+    type BrowserOAuthClientLoadOptions,
+    type OAuthSession,
     BrowserOAuthClient,
     LoginContinuedInParentWindowError,
 } from '@atproto/oauth-client-browser';
 
 type Simplify<T> = {[K in keyof T]: T[K]} & NonNullable<unknown>;
 
-export type OnRestored = (session: OAuthSession | null) => void;
-export type OnSignedIn = (session: OAuthSession, state: null | string) => void;
+export type OnRestored = (session: OAuthSession | undefined) => void;
+export type OnSignedIn = (session: OAuthSession, state: string | undefined) => void;
 export type OnSignedOut = () => void;
 
 type OAuthSignIn = (input: string) => Promise<void>;
@@ -38,7 +36,7 @@ function useCallbackRef<T extends (this: any, ...args: any[]) => any>(
 
 function useCallbackRef<T extends (this: any, ...args: any[]) => any>(fn?: T) {
     const fnRef = useValueRef(fn);
-    return useCallback(function (
+    return useCallback(function callbackRef(
         this: ThisParameterType<T>,
         ...args: Parameters<T>
     ): void | ReturnType<T> {
@@ -67,7 +65,7 @@ function useOAuthClient(
     options: ClientOptions,
     onUpdate?: (sub: string) => void,
     onDelete?: (sub: string) => void,
-): null | BrowserOAuthClient;
+): BrowserOAuthClient | undefined;
 function useOAuthClient(
     options: Partial<
         {client: BrowserOAuthClient} & BrowserOAuthClientLoadOptions
@@ -84,8 +82,8 @@ function useOAuthClient(
         allowHttp,
     } = options;
 
-    const [client, setClient] = useState<null | BrowserOAuthClient>(
-        clientInput || null,
+    const [client, setClient] = useState<BrowserOAuthClient | undefined>(
+        clientInput || undefined,
     );
     const fetch = useCallbackRef(options.fetch || globalThis.fetch);
 
@@ -96,7 +94,7 @@ function useOAuthClient(
             const ac = new AbortController();
             const {signal} = ac;
 
-            setClient(null);
+            setClient(undefined);
 
             void BrowserOAuthClient.load({
                 allowHttp,
@@ -132,7 +130,7 @@ function useOAuthClient(
 
             return () => ac.abort();
         } else {
-            setClient(null);
+            setClient(undefined);
         }
     }, [
         clientInput,
@@ -163,8 +161,8 @@ export function useOAuth(options: UseOAuthOptions) {
     const scopeRef = useValueRef(options.scope);
     const stateRef = useValueRef(options.state);
 
-    const [session, setSession] = useState<null | OAuthSession>(null);
-    const [client, setClient] = useState<BrowserOAuthClient | null>(null);
+    const [session, setSession] = useState<OAuthSession | undefined>();
+    const [client, setClient] = useState<BrowserOAuthClient | undefined>();
     const [isInitializing, setIsInitializing] = useState(true);
     const [isLoginPopup, setIsLoginPopup] = useState(false);
 
@@ -180,14 +178,14 @@ export function useOAuth(options: UseOAuthOptions) {
         const currentClient = clientRef.current;
         const currentSession = sessionRef.current;
         if (currentClient && (!currentSession || currentSession.sub !== sub)) {
-            setSession(null);
+            setSession(undefined);
             currentClient.restore(sub, false).then(setSession);
         }
     });
 
     const onSessionDelete = useCallbackRef((sub: string) => {
         if (sessionRef.current?.sub === sub) {
-            setSession(null);
+            setSession(undefined);
             onSignedOut();
         }
     });
@@ -206,10 +204,10 @@ export function useOAuth(options: UseOAuthOptions) {
         }
         clientForInitRef.current = clientForInit;
 
-        setSession(null);
-        setClient(null);
+        setSession(undefined);
+        setClient(undefined);
         setIsLoginPopup(false);
-        setIsInitializing(clientForInit != null);
+        setIsInitializing(clientForInit != undefined);
 
         clientForInit
             ?.init()
@@ -229,7 +227,7 @@ export function useOAuth(options: UseOAuthOptions) {
                             await onRestored(r.session);
                         }
                     } else {
-                        await onRestored(null);
+                        await onRestored(undefined);
                     }
                 },
                 async (error) => {
@@ -242,7 +240,7 @@ export function useOAuth(options: UseOAuthOptions) {
                     }
 
                     setClient(clientForInit);
-                    await onRestored(null);
+                    await onRestored(undefined);
 
                     console.error('Failed to init:', error);
                 },
@@ -265,7 +263,7 @@ export function useOAuth(options: UseOAuthOptions) {
             const scope = scopeRef.current;
             const session = await client.signIn(input, {scope, state});
             setSession(session);
-            await onSignedIn(session, state ?? null);
+            await onSignedIn(session, state ?? undefined);
         },
         [client, onSignedIn],
     );
@@ -273,9 +271,9 @@ export function useOAuth(options: UseOAuthOptions) {
     // Memoize the return value to avoid re-renders in consumers
     return useMemo(
         () => ({
-            agent: session ? new Agent(session) : null,
+            agent: session ? new Agent(session) : undefined,
             client,
-            isInitialized: client != null,
+            isInitialized: client != undefined,
             isInitializing,
             isLoginPopup,
             refresh: () => session?.getTokenInfo(true),

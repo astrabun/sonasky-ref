@@ -16,8 +16,8 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import type {Character} from '../../../../types/Character';
 import {
+    type Character,
     CharacterTypeKeys,
     validateCharacter,
 } from '../../../../types/Character';
@@ -42,9 +42,9 @@ function CharacterEditor(props: CharacterEditorProps) {
     const {pdsAgent} = useAuthContext();
     const navigate = useNavigate();
     const {rkey} = useParams<{rkey: string}>();
-    const [character, setCharacter] = useState<Character | null>(
+    const [character, setCharacter] = useState<Character | undefined>(
         editMode
-            ? null
+            ? undefined
             : {
                   altRef: '',
                   colors: [],
@@ -63,10 +63,8 @@ function CharacterEditor(props: CharacterEditorProps) {
     const [color, setColor] = useColor('#000000');
     const [colorLabel, setColorLabel] = useState<string>('');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [createdAt, setCreatedAt] = useState<string | null>(null);
-    const [editingColorIndex, setEditingColorIndex] = useState<number | null>(
-        null,
-    );
+    const [createdAt, setCreatedAt] = useState<string | undefined>();
+    const [editingColorIndex, setEditingColorIndex] = useState<number | undefined>();
 
     const loadCharacter = useCallback(async () => {
         try {
@@ -97,8 +95,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                 return url;
             }
 
-            const handle = pathParts[2];
-            const rkey = pathParts[4];
+            const [,, handle,, rkey] = pathParts;
             const didResponse =
                 await pdsAgent.com.atproto.identity.resolveHandle({handle});
             const {did} = didResponse.data;
@@ -117,13 +114,13 @@ function CharacterEditor(props: CharacterEditorProps) {
         const {name, value, type, checked} = e.target;
         if (name === 'refSheet' || name === 'altRef') {
             const atUri = await handleAtProtoRefImage(value);
-            setCharacter((prev) => (prev ? {...prev, [name]: atUri} : null));
+            setCharacter((prev) => (prev ? {...prev, [name]: atUri} : undefined));
             return;
         }
         setCharacter((prev) =>
             prev
                 ? {...prev, [name]: type === 'checkbox' ? checked : value}
-                : null,
+                : undefined,
         );
     };
 
@@ -230,7 +227,7 @@ function CharacterEditor(props: CharacterEditorProps) {
     };
 
     const handleClearColors = () => {
-        setCharacter((prev) => (prev ? {...prev, colors: []} : null));
+        setCharacter((prev) => (prev ? {...prev, colors: []} : undefined));
     };
 
     const handleOpenColorDialog = () => {
@@ -238,7 +235,7 @@ function CharacterEditor(props: CharacterEditorProps) {
         const rgb = {a: 1, b: 0, g: 0, r: 0};
         const hsv = {a: 1, h: 0, s: 0, v: 0};
         setColor({hex: '#000000', hsv, rgb});
-        setEditingColorIndex(null);
+        setEditingColorIndex(undefined);
         setColorDialogOpen(true);
     };
 
@@ -273,32 +270,28 @@ function CharacterEditor(props: CharacterEditorProps) {
         });
 
         function rgbToHsv(r: number, g: number, b: number) {
-            r /= 255;
-            g /= 255;
-            b /= 255;
-            const max = Math.max(r, g, b),
-                min = Math.min(r, g, b);
-            let h = 0,
-                s,
-                v = max;
-
+            const rn = r / 255;
+            const gn = g / 255;
+            const bn = b / 255;
+            const max = Math.max(rn, gn, bn);
+            const min = Math.min(rn, gn, bn);
             const d = max - min;
-            s = max === 0 ? 0 : d / max;
+            const s = max === 0 ? 0 : d / max;
+            const v = max;
+            let h = 0;
 
-            if (max === min) {
-                h = 0; // Achromatic
-            } else {
+            if (max !== min) {
                 switch (max) {
-                    case r: {
-                        h = (g - b) / d + (g < b ? 6 : 0);
+                    case rn: {
+                        h = (gn - bn) / d + (gn < bn ? 6 : 0);
                         break;
                     }
-                    case g: {
-                        h = (b - r) / d + 2;
+                    case gn: {
+                        h = (bn - rn) / d + 2;
                         break;
                     }
-                    case b: {
-                        h = (r - g) / d + 4;
+                    case bn: {
+                        h = (rn - gn) / d + 4;
                         break;
                     }
                 }
@@ -317,10 +310,10 @@ function CharacterEditor(props: CharacterEditorProps) {
     };
 
     const handleSaveColor = () => {
-        if (editingColorIndex !== null) {
+        if (editingColorIndex !== undefined) {
             setCharacter((prev) => {
                 if (!prev) {
-                    return null;
+                    return prev;
                 }
                 const updatedColors = [...(prev.colors || [])];
                 updatedColors[editingColorIndex] = {
@@ -341,7 +334,7 @@ function CharacterEditor(props: CharacterEditorProps) {
             }));
         }
         setColorLabel('');
-        setEditingColorIndex(null);
+        setEditingColorIndex(undefined);
         setColorDialogOpen(false);
     };
 
@@ -373,14 +366,12 @@ function CharacterEditor(props: CharacterEditorProps) {
                       ...prev,
                       colors: prev.colors?.filter((_, i) => i !== index) || [],
                   }
-                : null,
+                : undefined,
         );
     };
 
     const getBlueskyLink = (atUri: string): string => {
-        const parts = atUri.split('/');
-        const did = parts[2];
-        const rkey = parts[4];
+        const [,, did,, rkey] = atUri.split('/');
         return `https://bsky.app/profile/${did}/post/${rkey}`;
     };
 
@@ -455,7 +446,7 @@ function CharacterEditor(props: CharacterEditorProps) {
     const moveColor = (dragIndex: number, hoverIndex: number) => {
         setCharacter((prev) => {
             if (!prev) {
-                return null;
+                return prev;
             }
             const updatedColors = [...(prev.colors || [])];
             const [draggedColor] = updatedColors.splice(dragIndex, 1);

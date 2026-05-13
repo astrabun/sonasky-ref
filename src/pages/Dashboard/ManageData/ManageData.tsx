@@ -120,7 +120,7 @@ export function ManageData() {
                             startIcon={
                                 operationRunning ? (
                                     <CircularProgress size={20} />
-                                ) : null
+                                ) : undefined
                             }
                         >
                             {operationRunning ? 'Deleting...' : 'Delete Data'}
@@ -148,7 +148,7 @@ export function ManageData() {
                     </DialogActions>
                 </Dialog>
                 <pre style={{whiteSpace: 'pre-wrap', wordWrap: 'break-word'}}>
-                    {JSON.stringify(sonaRecords, null, 2)}
+                    {JSON.stringify(sonaRecords, undefined, 2)}
                 </pre>
             </Container>
         </Layout>

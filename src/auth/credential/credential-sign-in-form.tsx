@@ -1,5 +1,4 @@
-import type {FormEvent} from 'react';
-import {useCallback, useState} from 'react';
+import {type FormEvent, useCallback, useState} from 'react';
 
 export type AtpSignIn = (input: {
     identifier: string;
@@ -18,7 +17,7 @@ export function CredentialSignInForm({
 }: {
     signIn: AtpSignIn;
 } & Omit<React.HTMLAttributes<HTMLFormElement>, 'onSubmit'>) {
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | undefined>();
     const [loading, setLoading] = useState(false);
 
     const [identifier, setIdentifier] = useState('');
@@ -110,7 +109,7 @@ export function CredentialSignInForm({
                 </div>
             </fieldset>
 
-            {error ? <div className="alert alert-error">{error}</div> : null}
+            {error && <div className="alert alert-error">{error}</div>}
         </form>
     );
 }

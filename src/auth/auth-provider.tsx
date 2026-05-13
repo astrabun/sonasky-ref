@@ -1,13 +1,11 @@
 'use client';
 
 import type {Agent} from '@atproto/api';
-import type {ReactNode} from 'react';
-import {createContext, useContext, useMemo} from 'react';
+import {type ReactNode, createContext, useContext, useMemo} from 'react';
 
 import {useCredentialAuth} from './credential/use-credential-auth';
 import {AuthForm} from './auth-form';
-import type {UseOAuthOptions} from './oauth/use-oauth';
-import {useOAuth} from './oauth/use-oauth';
+import {type UseOAuthOptions, useOAuth} from './oauth/use-oauth';
 
 export interface AuthContext {
     pdsAgent: Agent;
@@ -15,7 +13,7 @@ export interface AuthContext {
     refresh: () => void;
 }
 
-const AuthContext = createContext<AuthContext | null>(null);
+const AuthContext = createContext<AuthContext | undefined>(undefined);
 
 export const AuthProvider = ({
     children,
@@ -40,7 +38,7 @@ export const AuthProvider = ({
         refresh: credentialRefresh,
     } = useCredentialAuth();
 
-    const value = useMemo<AuthContext | null>(() => {
+    const value = useMemo<AuthContext | undefined>(() => {
         if (oauthAgent) {
             return {
                 pdsAgent: oauthAgent,
@@ -57,7 +55,7 @@ export const AuthProvider = ({
             };
         }
 
-        return null;
+        return undefined;
     }, [
         oauthAgent,
         oauthSignOut,

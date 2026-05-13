@@ -20,7 +20,7 @@ export const clientId =
     ENV === 'development'
         ? `http://localhost?${new URLSearchParams({
               redirect_uri: Object.assign(
-                  new URL(`${window.location.origin}/dashboard`),
+                  new URL(`${globalThis.location.origin}/dashboard`),
                   {
                       hostname: '127.0.0.1',
                       search: new URLSearchParams({

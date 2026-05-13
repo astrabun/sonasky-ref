@@ -1,4 +1,4 @@
-const {searchParams} = new URL(window.location.href);
+const {searchParams} = new URL(globalThis.location.href);
 
 // Inserted during build
 declare const process: {env: {NODE_ENV: string}};

@@ -75,46 +75,50 @@ function InnerDashLayout(props: LayoutProps) {
                     >
                         SonaSky REF
                     </Typography>
-                    {navItems.map((item, idx) =>
-                        item.path ? (
-                            <Button
-                                key={item.path}
-                                component={Link}
-                                to={item.path}
-                                variant={
-                                    location.pathname === item.path
-                                        ? 'contained'
-                                        : 'outlined'
-                                }
-                                fullWidth
-                                style={{
-                                    justifyContent: 'flex-start',
-                                    marginBottom: '10px',
-                                }}
-                            >
-                                {item.name}
-                            </Button>
-                        ) : item.onclick ? (
-                            <Button
-                                key={idx}
-                                onClick={item.onclick}
-                                variant={
-                                    location.pathname === item.path
-                                        ? 'contained'
-                                        : 'outlined'
-                                }
-                                fullWidth
-                                style={{
-                                    justifyContent: 'flex-start',
-                                    marginBottom: '10px',
-                                }}
-                            >
-                                {item.name}
-                            </Button>
-                        ) : (
-                            <></>
-                        ),
-                    )}
+                    {navItems.map((item, idx) => {
+                        if (item.path) {
+                            return (
+                                <Button
+                                    key={item.path}
+                                    component={Link}
+                                    to={item.path}
+                                    variant={
+                                        location.pathname === item.path
+                                            ? 'contained'
+                                            : 'outlined'
+                                    }
+                                    fullWidth
+                                    style={{
+                                        justifyContent: 'flex-start',
+                                        marginBottom: '10px',
+                                    }}
+                                >
+                                    {item.name}
+                                </Button>
+                            );
+                        }
+                        if (item.onclick) {
+                            return (
+                                <Button
+                                    key={idx}
+                                    onClick={item.onclick}
+                                    variant={
+                                        location.pathname === item.path
+                                            ? 'contained'
+                                            : 'outlined'
+                                    }
+                                    fullWidth
+                                    style={{
+                                        justifyContent: 'flex-start',
+                                        marginBottom: '10px',
+                                    }}
+                                >
+                                    {item.name}
+                                </Button>
+                            );
+                        }
+                        return <></>;
+                    })}
                 </Box>
                 <Box
                     flexGrow={1}

@@ -1,5 +1,4 @@
-import type {LexiconDoc} from '@atproto/lexicon';
-import {Lexicons} from '@atproto/lexicon';
+import {type LexiconDoc, Lexicons} from '@atproto/lexicon';
 
 export const schemaDict = {
     AppSonaskyRef: {

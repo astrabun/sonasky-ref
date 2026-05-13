@@ -4,8 +4,7 @@ import type {
     AtpSignIn,
     // CredentialSignInForm,
 } from './credential/credential-sign-in-form';
-import type {OAuthSignIn} from './oauth/oauth-sign-in-form';
-import {OAuthSignInForm} from './oauth/oauth-sign-in-form';
+import {type OAuthSignIn, OAuthSignInForm} from './oauth/oauth-sign-in-form';
 
 export function AuthForm({
     atpSignIn,
@@ -14,11 +13,12 @@ export function AuthForm({
     atpSignIn?: AtpSignIn;
     oauthSignIn?: OAuthSignIn;
 }) {
-    const defaultMethod = oauthSignIn
-        ? 'oauth'
-        : atpSignIn
-          ? 'credential'
-          : undefined;
+    let defaultMethod: 'oauth' | 'credential' | undefined;
+    if (oauthSignIn) {
+        defaultMethod = 'oauth';
+    } else if (atpSignIn) {
+        defaultMethod = 'credential';
+    }
 
     const [method, setMethod] = useState<undefined | 'oauth' | 'credential'>(
         defaultMethod,

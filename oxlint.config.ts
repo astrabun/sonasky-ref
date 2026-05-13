@@ -5,10 +5,10 @@ export default defineConfig({
     correctness: 'warn',
     style: 'error',
   },
-  ignorePatterns: ['packages/*/dist/**', 'node_modules/**', '**/node_modules/**'],
+  ignorePatterns: ['node_modules/**', '**/node_modules/**'],
   overrides: [
     {
-      files: ['packages/**/*.ts', 'packages/**/*.tsx'],
+      files: ['src/**/*.ts', 'src/**/*.tsx'],
       rules: {
         'func-style': 'off',
         'id-length': 'off',
@@ -21,6 +21,8 @@ export default defineConfig({
         'sort-imports': 'off',
         // PascalCase filenames are conventional for class files
         'unicorn/filename-case': 'off',
+        // consecutive-comma destructuring is required when prefer-destructuring is on
+        'unicorn/no-unreadable-array-destructuring': 'off',
       },
     },
   ],

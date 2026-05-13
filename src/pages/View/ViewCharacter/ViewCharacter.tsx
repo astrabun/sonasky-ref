@@ -42,7 +42,7 @@ export function ViewCharacter() {
         rkey: string;
     }>();
     const navigate = useNavigate();
-    const [character, setCharacter] = useState<any | null>(null);
+    const [character, setCharacter] = useState<any>();
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<boolean>(false);
     const [loadingText, setLoadingText] = useState<string>('Loading.');
@@ -100,7 +100,7 @@ export function ViewCharacter() {
     useEffect(() => {
         if (character) {
             if (character.refSheet && character.refSheet.startsWith('at://')) {
-                const refSheetDid = character.refSheet.split('/')[2];
+                const [,, refSheetDid] = character.refSheet.split('/');
                 rpc.get('com.atproto.repo.getRecord', {
                     params: {
                         collection: 'app.bsky.feed.post',
@@ -117,7 +117,7 @@ export function ViewCharacter() {
                 });
             }
             if (character.altRef && character.altRef.startsWith('at://')) {
-                const altRefDid = character.altRef.split('/')[2];
+                const [,, altRefDid] = character.altRef.split('/');
                 rpc.get('com.atproto.repo.getRecord', {
                     params: {
                         collection: 'app.bsky.feed.post',
@@ -180,9 +180,7 @@ export function ViewCharacter() {
     }
 
     const getBlueskyLink = (atUri: string): string => {
-        const parts = atUri.split('/');
-        const did = parts[2];
-        const rkey = parts[4];
+        const [,, did,, rkey] = atUri.split('/');
         return `https://bsky.app/profile/${did}/post/${rkey}`;
     };
 
