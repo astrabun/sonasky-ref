@@ -12,8 +12,13 @@ import {
 
 type Simplify<T> = {[K in keyof T]: T[K]} & NonNullable<unknown>;
 
-export type OnRestored = (session: OAuthSession | undefined) => void | Promise<void>;
-export type OnSignedIn = (session: OAuthSession, state: string | undefined) => void | Promise<void>;
+export type OnRestored = (
+    session: OAuthSession | undefined,
+) => void | Promise<void>;
+export type OnSignedIn = (
+    session: OAuthSession,
+    state: string | undefined,
+) => void | Promise<void>;
 export type OnSignedOut = () => void;
 
 type OAuthSignIn = (input: string) => Promise<void>;

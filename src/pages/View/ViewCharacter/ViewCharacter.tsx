@@ -100,38 +100,42 @@ export function ViewCharacter() {
     useEffect(() => {
         if (character) {
             if (character.refSheet && character.refSheet.startsWith('at://')) {
-                const [,, refSheetDid] = character.refSheet.split('/');
-                void rpc.get('com.atproto.repo.getRecord', {
-                    params: {
-                        collection: 'app.bsky.feed.post',
-                        repo: refSheetDid,
-                        rkey: character.refSheet.split('/').pop(),
-                    },
-                }).then((response) => {
-                    const {data} = response;
-                    const cid = ((data as any).value as any).embed.images[0]
-                        .image.ref.$link;
-                    setRefSheetImage(
-                        `https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split('/')[2]}/${cid}@jpeg`,
-                    );
-                });
+                const [, , refSheetDid] = character.refSheet.split('/');
+                void rpc
+                    .get('com.atproto.repo.getRecord', {
+                        params: {
+                            collection: 'app.bsky.feed.post',
+                            repo: refSheetDid,
+                            rkey: character.refSheet.split('/').pop(),
+                        },
+                    })
+                    .then((response) => {
+                        const {data} = response;
+                        const cid = ((data as any).value as any).embed.images[0]
+                            .image.ref.$link;
+                        setRefSheetImage(
+                            `https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split('/')[2]}/${cid}@jpeg`,
+                        );
+                    });
             }
             if (character.altRef && character.altRef.startsWith('at://')) {
-                const [,, altRefDid] = character.altRef.split('/');
-                void rpc.get('com.atproto.repo.getRecord', {
-                    params: {
-                        collection: 'app.bsky.feed.post',
-                        repo: altRefDid,
-                        rkey: character.altRef.split('/').pop(),
-                    },
-                }).then((response) => {
-                    const {data} = response;
-                    const cid = ((data as any).value as any).embed.images[0]
-                        .image.ref.$link;
-                    setAltRefSheetImage(
-                        `https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split('/')[2]}/${cid}@jpeg`,
-                    );
-                });
+                const [, , altRefDid] = character.altRef.split('/');
+                void rpc
+                    .get('com.atproto.repo.getRecord', {
+                        params: {
+                            collection: 'app.bsky.feed.post',
+                            repo: altRefDid,
+                            rkey: character.altRef.split('/').pop(),
+                        },
+                    })
+                    .then((response) => {
+                        const {data} = response;
+                        const cid = ((data as any).value as any).embed.images[0]
+                            .image.ref.$link;
+                        setAltRefSheetImage(
+                            `https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split('/')[2]}/${cid}@jpeg`,
+                        );
+                    });
             }
             setError(false);
         }
@@ -180,7 +184,7 @@ export function ViewCharacter() {
     }
 
     const getBlueskyLink = (atUri: string): string => {
-        const [,, did,, rkey] = atUri.split('/');
+        const [, , did, , rkey] = atUri.split('/');
         return `https://bsky.app/profile/${did}/post/${rkey}`;
     };
 

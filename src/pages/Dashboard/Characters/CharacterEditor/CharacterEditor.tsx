@@ -64,7 +64,9 @@ function CharacterEditor(props: CharacterEditorProps) {
     const [colorLabel, setColorLabel] = useState<string>('');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [createdAt, setCreatedAt] = useState<string | undefined>();
-    const [editingColorIndex, setEditingColorIndex] = useState<number | undefined>();
+    const [editingColorIndex, setEditingColorIndex] = useState<
+        number | undefined
+    >();
 
     const loadCharacter = useCallback(async () => {
         try {
@@ -95,7 +97,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                 return url;
             }
 
-            const [,, handle,, rkey] = pathParts;
+            const [, , handle, , rkey] = pathParts;
             const didResponse =
                 await pdsAgent.com.atproto.identity.resolveHandle({handle});
             const {did} = didResponse.data;
@@ -114,7 +116,9 @@ function CharacterEditor(props: CharacterEditorProps) {
         const {name, value, type, checked} = e.target;
         if (name === 'refSheet' || name === 'altRef') {
             const atUri = await handleAtProtoRefImage(value);
-            setCharacter((prev) => (prev ? {...prev, [name]: atUri} : undefined));
+            setCharacter((prev) =>
+                prev ? {...prev, [name]: atUri} : undefined,
+            );
             return;
         }
         setCharacter((prev) =>
@@ -371,7 +375,7 @@ function CharacterEditor(props: CharacterEditorProps) {
     };
 
     const getBlueskyLink = (atUri: string): string => {
-        const [,, did,, rkey] = atUri.split('/');
+        const [, , did, , rkey] = atUri.split('/');
         return `https://bsky.app/profile/${did}/post/${rkey}`;
     };
 

@@ -149,14 +149,16 @@ function View() {
             return;
         }
         if (did?.startsWith('did:plc:')) {
-            void rpc.get('com.atproto.repo.describeRepo', {
-                params: {
-                    repo: (blueskyHandleOrDID ?? '') as Handle,
-                },
-            }).then((response) => {
-                const {data} = response;
-                setRepoData(data);
-            });
+            void rpc
+                .get('com.atproto.repo.describeRepo', {
+                    params: {
+                        repo: (blueskyHandleOrDID ?? '') as Handle,
+                    },
+                })
+                .then((response) => {
+                    const {data} = response;
+                    setRepoData(data);
+                });
         }
     }, [handle, did, rpc]);
 
