@@ -18,5 +18,5 @@ export const HANDLE_RESOLVER_URL: string =
 export const PDS_COLLECTION_NS = 'app.sonasky.ref';
 
 export const FLAGS = {
-    SHOW_FEEDBACK_FORM_ALERT: true,
+    SHOW_FEEDBACK_FORM_ALERT: false,
 };
