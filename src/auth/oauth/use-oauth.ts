@@ -59,11 +59,17 @@ type ClientOptions =
       >
     >
 
-function useOAuthClient(options: ClientOptions): null | BrowserOAuthClient
+function useOAuthClient(
+  options: ClientOptions,
+  onUpdate?: (sub: string) => void,
+  onDelete?: (sub: string) => void,
+): null | BrowserOAuthClient
 function useOAuthClient(
   options: Partial<
     { client: BrowserOAuthClient } & BrowserOAuthClientLoadOptions
   >,
+  onUpdate?: (sub: string) => void,
+  onDelete?: (sub: string) => void,
 ) {
   const {
     client: clientInput,
@@ -96,15 +102,21 @@ function useOAuthClient(
         fetch,
         allowHttp,
         signal,
+        onUpdate,
+        onDelete,
       }).then(
         (client) => {
           if (!signal.aborted) {
-            signal.addEventListener('abort', () => client.dispose(), {
-              once: true,
-            })
+            signal.addEventListener(
+              'abort',
+              () => {
+                void client[Symbol.asyncDispose]()
+              },
+              { once: true },
+            )
             setClient(client)
           } else {
-            client.dispose()
+            void client[Symbol.asyncDispose]()
           }
         },
         (err) => {
@@ -142,8 +154,6 @@ export function useOAuth(options: UseOAuthOptions) {
   const onSignedIn = useCallbackRef(options.onSignedIn)
   const onSignedOut = useCallbackRef(options.onSignedOut)
 
-  const clientForInit = useOAuthClient(options)
-
   const scopeRef = useValueRef(options.scope)
   const stateRef = useValueRef(options.state)
 
@@ -151,6 +161,32 @@ export function useOAuth(options: UseOAuthOptions) {
   const [client, setClient] = useState<BrowserOAuthClient | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
   const [isLoginPopup, setIsLoginPopup] = useState(false)
+
+  // Refs so that onUpdate/onDelete callbacks (baked into the client at
+  // construction time) always see the latest session and client values.
+  const sessionRef = useValueRef(session)
+  const clientRef = useValueRef(client)
+
+  // Stable callbacks passed to BrowserOAuthClient at construction time.
+  // The new API (oauth-client >= 0.6) removed addEventListener in favour of
+  // these constructor-time hooks.
+  const onSessionUpdate = useCallbackRef((sub: string) => {
+    const currentClient = clientRef.current
+    const currentSession = sessionRef.current
+    if (currentClient && (!currentSession || currentSession.sub !== sub)) {
+      setSession(null)
+      currentClient.restore(sub, false).then(setSession)
+    }
+  })
+
+  const onSessionDelete = useCallbackRef((sub: string) => {
+    if (sessionRef.current?.sub === sub) {
+      setSession(null)
+      void onSignedOut()
+    }
+  })
+
+  const clientForInit = useOAuthClient(options, onSessionUpdate, onSessionDelete)
 
   const clientForInitRef = useRef<typeof clientForInit>(null)
   useEffect(() => {
@@ -201,43 +237,6 @@ export function useOAuth(options: UseOAuthOptions) {
         setIsInitializing(false)
       })
   }, [clientForInit, onSignedIn, onRestored])
-
-  useEffect(() => {
-    if (!client) return
-
-    const controller = new AbortController()
-    const { signal } = controller
-
-    client.addEventListener(
-      'updated',
-      ({ detail: { sub } }) => {
-        if (!session || session.sub !== sub) {
-          setSession(null)
-          client.restore(sub, false).then((session) => {
-            if (!signal.aborted) setSession(session)
-          })
-        }
-      },
-      { signal },
-    )
-
-    if (session) {
-      client.addEventListener(
-        'deleted',
-        ({ detail: { sub } }) => {
-          if (session.sub === sub) {
-            setSession(null)
-            void onSignedOut()
-          }
-        },
-        { signal },
-      )
-    }
-
-    return () => {
-      controller.abort()
-    }
-  }, [client, session, onSignedOut])
 
   const signIn = useCallback<OAuthSignIn>(
     async (input) => {
