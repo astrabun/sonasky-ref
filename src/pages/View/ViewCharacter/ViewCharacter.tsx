@@ -150,12 +150,16 @@ export function ViewCharacter() {
     }, [character]);
 
     useEffect(() => {
-        if (!character?.nsfw) {return;}
+        if (!character?.nsfw) {
+            return;
+        }
         const key = `nsfw-confirm:${globalThis.location.pathname}`;
         const stored = localStorage.getItem(key);
         if (stored) {
             const ts = parseInt(stored, 10);
-            if (Date.now() - ts < 30 * 24 * 60 * 60 * 1000) {return;}
+            if (Date.now() - ts < 30 * 24 * 60 * 60 * 1000) {
+                return;
+            }
         }
         setNsfwBlurred(true);
     }, [character]);
@@ -442,7 +446,9 @@ export function ViewCharacter() {
             {nsfwBlurred && (
                 <Box
                     onTransitionEnd={() => {
-                        if (nsfwFadingOut) {setNsfwBlurred(false);}
+                        if (nsfwFadingOut) {
+                            setNsfwBlurred(false);
+                        }
                     }}
                     sx={{
                         alignItems: 'center',
