@@ -49,6 +49,7 @@ function Changelog() {
                 )}
                 {changelogData
                     .filter((i) => i.version !== latestVersion.version)
+                    .sort((a, b) => b.date.valueOf() - a.date.valueOf())
                     .map((version, index) => (
                         <Accordion key={index}>
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
