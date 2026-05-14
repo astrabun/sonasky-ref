@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
+import LinksDialog from './LinksDialog';
 import {useNavigate, useParams} from 'react-router';
 import Layout from '../../../../layouts/Dashboard';
 import {
@@ -51,6 +52,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                   description: '',
                   drawWithoutAskingNSFW: false,
                   drawWithoutAskingSFW: false,
+                  links: [],
                   name: '',
                   nsfw: false,
                   pronouns: '',
@@ -60,6 +62,7 @@ function CharacterEditor(props: CharacterEditorProps) {
     );
     const [validationMessage, setValidationMessage] = useState<string>('');
     const [colorDialogOpen, setColorDialogOpen] = useState(false);
+    const [linksDialogOpen, setLinksDialogOpen] = useState(false);
     const [color, setColor] = useColor('#000000');
     const [colorLabel, setColorLabel] = useState<string>('');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -529,206 +532,209 @@ function CharacterEditor(props: CharacterEditorProps) {
 
     return (
         <Layout>
-            <Container>
-                <Typography
-                    variant="h4"
-                    gutterBottom
-                >
-                    {editMode ? 'Edit' : 'Create'} Character
-                </Typography>
-                <Box
-                    component="form"
-                    onSubmit={editMode ? handleSubmitEdit : handleSubmitNew}
-                    sx={{
-                        '& > *': {
-                            width: '100%',
-                        },
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '16px',
-                    }}
-                >
-                    <TextField
-                        label="Name"
-                        name="name"
-                        value={character.name}
-                        onChange={handleChange}
-                        required
-                        margin="normal"
-                        inputProps={{maxLength: 256}}
-                    />
-                    <TextField
-                        label="Species"
-                        name="species"
-                        value={character.species}
-                        onChange={handleChange}
-                        margin="normal"
-                        inputProps={{maxLength: 64}}
-                    />
-                    <TextField
-                        label="Pronouns"
-                        name="pronouns"
-                        value={character.pronouns}
-                        onChange={handleChange}
-                        margin="normal"
-                        inputProps={{maxLength: 32}}
-                    />
-                    <Box>
-                        <Box sx={{alignItems: 'center', display: 'flex'}}>
-                            <TextField
-                                label="Ref Sheet Post on Bluesky (URL)"
-                                name="refSheet"
-                                value={character.refSheet}
-                                onChange={handleChange}
-                                margin="normal"
-                                fullWidth
-                            />
-                            {character.refSheet?.startsWith('at://') && (
-                                <IconButton
-                                    component="a"
-                                    href={getBlueskyLink(character.refSheet)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{marginLeft: 1}}
+            <DndProvider backend={HTML5Backend}>
+                <Container>
+                    <Typography
+                        variant="h4"
+                        gutterBottom
+                    >
+                        {editMode ? 'Edit' : 'Create'} Character
+                    </Typography>
+                    <Box
+                        component="form"
+                        onSubmit={editMode ? handleSubmitEdit : handleSubmitNew}
+                        sx={{
+                            '& > *': {
+                                width: '100%',
+                            },
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '16px',
+                        }}
+                    >
+                        <TextField
+                            label="Name"
+                            name="name"
+                            value={character.name}
+                            onChange={handleChange}
+                            required
+                            margin="normal"
+                            inputProps={{maxLength: 256}}
+                        />
+                        <TextField
+                            label="Species"
+                            name="species"
+                            value={character.species}
+                            onChange={handleChange}
+                            margin="normal"
+                            inputProps={{maxLength: 64}}
+                        />
+                        <TextField
+                            label="Pronouns"
+                            name="pronouns"
+                            value={character.pronouns}
+                            onChange={handleChange}
+                            margin="normal"
+                            inputProps={{maxLength: 32}}
+                        />
+                        <Box>
+                            <Box sx={{alignItems: 'center', display: 'flex'}}>
+                                <TextField
+                                    label="Ref Sheet Post on Bluesky (URL)"
+                                    name="refSheet"
+                                    value={character.refSheet}
+                                    onChange={handleChange}
+                                    margin="normal"
+                                    fullWidth
+                                />
+                                {character.refSheet?.startsWith('at://') && (
+                                    <IconButton
+                                        component="a"
+                                        href={getBlueskyLink(
+                                            character.refSheet,
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{marginLeft: 1}}
+                                    >
+                                        <OpenInNewIcon />
+                                    </IconButton>
+                                )}
+                            </Box>
+                            {refSheetImages.length > 0 && (
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '8px',
+                                        mt: 1,
+                                    }}
                                 >
-                                    <OpenInNewIcon />
-                                </IconButton>
+                                    {refSheetImages.map((cid, index) => {
+                                        const did =
+                                            character.refSheet?.split('/')[2];
+                                        const isSelected =
+                                            (character.refSheetImageIndex ??
+                                                0) === index;
+                                        return (
+                                            <Box
+                                                key={cid}
+                                                sx={{
+                                                    border: '3px solid',
+                                                    borderColor: isSelected
+                                                        ? 'primary.main'
+                                                        : 'transparent',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    height: '80px',
+                                                    overflow: 'hidden',
+                                                    width: '80px',
+                                                }}
+                                                onClick={() =>
+                                                    setCharacter((prev) =>
+                                                        prev
+                                                            ? {
+                                                                  ...prev,
+                                                                  refSheetImageIndex:
+                                                                      index,
+                                                              }
+                                                            : undefined,
+                                                    )
+                                                }
+                                            >
+                                                <img
+                                                    src={`https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${cid}@jpeg`}
+                                                    alt={`Image ${index + 1}`}
+                                                    style={{
+                                                        height: '100%',
+                                                        objectFit: 'cover',
+                                                        width: '100%',
+                                                    }}
+                                                />
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
                             )}
                         </Box>
-                        {refSheetImages.length > 0 && (
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: '8px',
-                                    mt: 1,
-                                }}
-                            >
-                                {refSheetImages.map((cid, index) => {
-                                    const did =
-                                        character.refSheet?.split('/')[2];
-                                    const isSelected =
-                                        (character.refSheetImageIndex ?? 0) ===
-                                        index;
-                                    return (
-                                        <Box
-                                            key={cid}
-                                            sx={{
-                                                border: '3px solid',
-                                                borderColor: isSelected
-                                                    ? 'primary.main'
-                                                    : 'transparent',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                                height: '80px',
-                                                overflow: 'hidden',
-                                                width: '80px',
-                                            }}
-                                            onClick={() =>
-                                                setCharacter((prev) =>
-                                                    prev
-                                                        ? {
-                                                              ...prev,
-                                                              refSheetImageIndex:
-                                                                  index,
-                                                          }
-                                                        : undefined,
-                                                )
-                                            }
-                                        >
-                                            <img
-                                                src={`https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${cid}@jpeg`}
-                                                alt={`Image ${index + 1}`}
-                                                style={{
-                                                    height: '100%',
-                                                    objectFit: 'cover',
-                                                    width: '100%',
-                                                }}
-                                            />
-                                        </Box>
-                                    );
-                                })}
+                        <Box>
+                            <Box sx={{alignItems: 'center', display: 'flex'}}>
+                                <TextField
+                                    label="Alt Ref Post on Bluesky (URL)"
+                                    name="altRef"
+                                    value={character.altRef}
+                                    onChange={handleChange}
+                                    margin="normal"
+                                    fullWidth
+                                />
+                                {character.altRef?.startsWith('at://') && (
+                                    <IconButton
+                                        component="a"
+                                        href={getBlueskyLink(character.altRef)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{marginLeft: 1}}
+                                    >
+                                        <OpenInNewIcon />
+                                    </IconButton>
+                                )}
                             </Box>
-                        )}
-                    </Box>
-                    <Box>
-                        <Box sx={{alignItems: 'center', display: 'flex'}}>
-                            <TextField
-                                label="Alt Ref Post on Bluesky (URL)"
-                                name="altRef"
-                                value={character.altRef}
-                                onChange={handleChange}
-                                margin="normal"
-                                fullWidth
-                            />
-                            {character.altRef?.startsWith('at://') && (
-                                <IconButton
-                                    component="a"
-                                    href={getBlueskyLink(character.altRef)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{marginLeft: 1}}
+                            {altRefImages.length > 0 && (
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '8px',
+                                        mt: 1,
+                                    }}
                                 >
-                                    <OpenInNewIcon />
-                                </IconButton>
+                                    {altRefImages.map((cid, index) => {
+                                        const did =
+                                            character.altRef?.split('/')[2];
+                                        const isSelected =
+                                            (character.altRefImageIndex ??
+                                                0) === index;
+                                        return (
+                                            <Box
+                                                key={cid}
+                                                sx={{
+                                                    border: '3px solid',
+                                                    borderColor: isSelected
+                                                        ? 'primary.main'
+                                                        : 'transparent',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    height: '80px',
+                                                    overflow: 'hidden',
+                                                    width: '80px',
+                                                }}
+                                                onClick={() =>
+                                                    setCharacter((prev) =>
+                                                        prev
+                                                            ? {
+                                                                  ...prev,
+                                                                  altRefImageIndex:
+                                                                      index,
+                                                              }
+                                                            : undefined,
+                                                    )
+                                                }
+                                            >
+                                                <img
+                                                    src={`https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${cid}@jpeg`}
+                                                    alt={`Image ${index + 1}`}
+                                                    style={{
+                                                        height: '100%',
+                                                        objectFit: 'cover',
+                                                        width: '100%',
+                                                    }}
+                                                />
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
                             )}
                         </Box>
-                        {altRefImages.length > 0 && (
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: '8px',
-                                    mt: 1,
-                                }}
-                            >
-                                {altRefImages.map((cid, index) => {
-                                    const did = character.altRef?.split('/')[2];
-                                    const isSelected =
-                                        (character.altRefImageIndex ?? 0) ===
-                                        index;
-                                    return (
-                                        <Box
-                                            key={cid}
-                                            sx={{
-                                                border: '3px solid',
-                                                borderColor: isSelected
-                                                    ? 'primary.main'
-                                                    : 'transparent',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                                height: '80px',
-                                                overflow: 'hidden',
-                                                width: '80px',
-                                            }}
-                                            onClick={() =>
-                                                setCharacter((prev) =>
-                                                    prev
-                                                        ? {
-                                                              ...prev,
-                                                              altRefImageIndex:
-                                                                  index,
-                                                          }
-                                                        : undefined,
-                                                )
-                                            }
-                                        >
-                                            <img
-                                                src={`https://cdn.bsky.app/img/feed_thumbnail/plain/${did}/${cid}@jpeg`}
-                                                alt={`Image ${index + 1}`}
-                                                style={{
-                                                    height: '100%',
-                                                    objectFit: 'cover',
-                                                    width: '100%',
-                                                }}
-                                            />
-                                        </Box>
-                                    );
-                                })}
-                            </Box>
-                        )}
-                    </Box>
-                    <DndProvider backend={HTML5Backend}>
                         <Box
                             sx={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}
                         >
@@ -741,158 +747,180 @@ function CharacterEditor(props: CharacterEditorProps) {
                                 />
                             ))}
                         </Box>
-                    </DndProvider>
-                    <Box sx={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleOpenColorDialog}
+                        <Box
+                            sx={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}
                         >
-                            Add Color
-                        </Button>
-                        {character.colors && character.colors.length > 0 && (
                             <Button
                                 variant="contained"
-                                color="secondary"
-                                onClick={handleClearColors}
+                                color="primary"
+                                onClick={handleOpenColorDialog}
                             >
-                                Clear Colors
+                                Add Color
                             </Button>
-                        )}
-                    </Box>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={character.drawWithoutAskingSFW}
-                                onChange={handleChange}
-                                name="drawWithoutAskingSFW"
-                            />
-                        }
-                        label="Draw Without Asking (SFW)"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={character.drawWithoutAskingNSFW}
-                                onChange={handleChange}
-                                name="drawWithoutAskingNSFW"
-                            />
-                        }
-                        label="Draw Without Asking (NSFW)"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={character.nsfw}
-                                onChange={handleChange}
-                                name="nsfw"
-                            />
-                        }
-                        label="NSFW"
-                    />
-                    <TextField
-                        label="Description"
-                        name="description"
-                        value={character.description}
-                        onChange={handleChange}
-                        margin="normal"
-                        multiline
-                        rows={4}
-                        inputProps={{maxLength: 2560}}
-                    />
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                    >
-                        {editMode ? 'Save Changes' : 'Create Character'}
-                    </Button>
-                    {editMode && (
-                        <>
+                            {character.colors &&
+                                character.colors.length > 0 && (
+                                    <Button
+                                        variant="contained"
+                                        color="secondary"
+                                        onClick={handleClearColors}
+                                    >
+                                        Clear Colors
+                                    </Button>
+                                )}
+                        </Box>
+                        <Box>
                             <Button
                                 variant="contained"
-                                color="error"
-                                onClick={handleOpenDeleteDialog}
+                                color="primary"
+                                onClick={() => setLinksDialogOpen(true)}
                             >
-                                Delete Character
+                                Manage Links
                             </Button>
-                        </>
-                    )}
-                    {validationMessage && (
-                        <Typography
-                            variant="body2"
-                            color="error"
-                        >
-                            {validationMessage}
-                        </Typography>
-                    )}
-                </Box>
-                <Dialog
-                    open={colorDialogOpen}
-                    onClose={handleCloseColorDialog}
-                >
-                    <DialogTitle>
-                        {editingColorIndex !== null
-                            ? 'Edit Color'
-                            : 'Add Color'}
-                    </DialogTitle>
-                    <DialogContent>
-                        <ColorPicker
-                            hideInput={['rgb', 'hsv']}
-                            color={color}
-                            onChange={setColor}
+                        </Box>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={character.drawWithoutAskingSFW}
+                                    onChange={handleChange}
+                                    name="drawWithoutAskingSFW"
+                                />
+                            }
+                            label="Draw Without Asking (SFW)"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={character.drawWithoutAskingNSFW}
+                                    onChange={handleChange}
+                                    name="drawWithoutAskingNSFW"
+                                />
+                            }
+                            label="Draw Without Asking (NSFW)"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={character.nsfw}
+                                    onChange={handleChange}
+                                    name="nsfw"
+                                />
+                            }
+                            label="NSFW"
                         />
                         <TextField
-                            label="Color Label"
-                            value={colorLabel}
-                            onChange={(e) => setColorLabel(e.target.value)}
-                            fullWidth
+                            label="Description"
+                            name="description"
+                            value={character.description}
+                            onChange={handleChange}
                             margin="normal"
-                            inputProps={{maxLength: 64}}
+                            multiline
+                            rows={4}
+                            inputProps={{maxLength: 2560}}
                         />
-                    </DialogContent>
-                    <DialogActions>
                         <Button
-                            onClick={handleCloseColorDialog}
+                            type="submit"
+                            variant="contained"
                             color="primary"
                         >
-                            Cancel
+                            {editMode ? 'Save Changes' : 'Create Character'}
                         </Button>
-                        <Button
-                            onClick={handleSaveColor}
-                            color="primary"
-                        >
-                            {editingColorIndex !== null ? 'Save' : 'Add'}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-                <Dialog
-                    open={deleteDialogOpen}
-                    onClose={handleCloseDeleteDialog}
-                >
-                    <DialogTitle>Confirm Deletion</DialogTitle>
-                    <DialogContent>
-                        <Typography>
-                            This action is permanent and cannot be undone. Are
-                            you sure you want to delete this character?
-                        </Typography>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            onClick={handleCloseDeleteDialog}
-                            color="primary"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleDeleteCharacter}
-                            color="error"
-                        >
-                            Delete
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </Container>
+                        {editMode && (
+                            <>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleOpenDeleteDialog}
+                                >
+                                    Delete Character
+                                </Button>
+                            </>
+                        )}
+                        {validationMessage && (
+                            <Typography
+                                variant="body2"
+                                color="error"
+                            >
+                                {validationMessage}
+                            </Typography>
+                        )}
+                    </Box>
+                    <LinksDialog
+                        open={linksDialogOpen}
+                        onClose={() => setLinksDialogOpen(false)}
+                        links={character.links ?? []}
+                        onLinksChange={(links) =>
+                            setCharacter((prev) =>
+                                prev ? {...prev, links} : undefined,
+                            )
+                        }
+                    />
+                    <Dialog
+                        open={colorDialogOpen}
+                        onClose={handleCloseColorDialog}
+                    >
+                        <DialogTitle>
+                            {editingColorIndex !== null
+                                ? 'Edit Color'
+                                : 'Add Color'}
+                        </DialogTitle>
+                        <DialogContent>
+                            <ColorPicker
+                                hideInput={['rgb', 'hsv']}
+                                color={color}
+                                onChange={setColor}
+                            />
+                            <TextField
+                                label="Color Label"
+                                value={colorLabel}
+                                onChange={(e) => setColorLabel(e.target.value)}
+                                fullWidth
+                                margin="normal"
+                                inputProps={{maxLength: 64}}
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                onClick={handleCloseColorDialog}
+                                color="primary"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleSaveColor}
+                                color="primary"
+                            >
+                                {editingColorIndex !== null ? 'Save' : 'Add'}
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Dialog
+                        open={deleteDialogOpen}
+                        onClose={handleCloseDeleteDialog}
+                    >
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogContent>
+                            <Typography>
+                                This action is permanent and cannot be undone.
+                                Are you sure you want to delete this character?
+                            </Typography>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                onClick={handleCloseDeleteDialog}
+                                color="primary"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleDeleteCharacter}
+                                color="error"
+                            >
+                                Delete
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                </Container>
+            </DndProvider>
         </Layout>
     );
 }

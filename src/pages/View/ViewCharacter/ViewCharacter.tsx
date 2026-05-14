@@ -21,6 +21,11 @@ import {Client, CredentialManager} from '@atcute/client';
 import type {} from '@atcute/atproto';
 import type {ActorIdentifier} from '@atcute/lexicons';
 import {HANDLE_RESOLVER_URL} from '../../../const';
+import {
+    type CharacterLink,
+    LINK_TYPE_LABELS,
+    validateCharacterLink,
+} from '../../../types/characterLinks';
 import NotFound from '../../NotFound';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -227,6 +232,8 @@ export function ViewCharacter() {
         return `https://bsky.app/profile/${did}/post/${rkey}`;
     };
 
+    const validLinks = (character.links ?? []).filter(validateCharacterLink);
+
     return (
         <Layout>
             <div style={{marginTop: '2rem'}} />
@@ -385,6 +392,36 @@ export function ViewCharacter() {
                                 )}
                             </Grid>
                         </Box>
+                        {/* Links */}
+                        {validLinks.length > 0 && (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '0.5rem',
+                                    marginBottom: '1rem',
+                                    marginTop: '1rem',
+                                }}
+                            >
+                                {validLinks.map(
+                                    (link: CharacterLink, idx: number) => (
+                                        <Button
+                                            key={idx}
+                                            variant="outlined"
+                                            size="small"
+                                            component="a"
+                                            href={link.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            startIcon={<OpenInNewIcon />}
+                                        >
+                                            {link.label ||
+                                                LINK_TYPE_LABELS[link.type]}
+                                        </Button>
+                                    ),
+                                )}
+                            </Box>
+                        )}
                         {/* Ref Sheet */}
                         {character.altRef && (
                             <FormControlLabel

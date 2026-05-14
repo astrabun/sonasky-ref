@@ -49,6 +49,13 @@ const changelogData = [
         date: dayjs(`2026-05-13`),
         version: '1.3.1',
     },
+    {
+        changes: [
+            `Adds a feature for adding external links to a ref sheet page; if you've got a refsheet on FA or an extra image to link to on Bluesky, for example, you can add it here.`,
+        ],
+        date: dayjs(`2026-05-14`),
+        version: '1.4.0',
+    },
 ];
 
 // Get latest version by the highest semver version

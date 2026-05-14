@@ -1,3 +1,5 @@
+import {type CharacterLink, validateCharacterLink} from './characterLinks';
+
 export interface Character {
     name: string; // Required, max length 128 characters
     species?: string; // Optional, max length 64 characters
@@ -11,6 +13,7 @@ export interface Character {
     drawWithoutAskingNSFW?: boolean; // Optional
     nsfw?: boolean; // Optional
     description?: string; // Optional, max length 2560 characters
+    links?: CharacterLink[]; // Optional, external profile links
 }
 
 export const CharacterTypeKeys = [
@@ -26,6 +29,7 @@ export const CharacterTypeKeys = [
     'drawWithoutAskingNSFW',
     'nsfw',
     'description',
+    'links',
 ];
 
 // Validation function
@@ -63,6 +67,13 @@ export function validateCharacter(character: Character): {
     }
     if (character.description && character.description.length > 2560) {
         return {message: 'Description exceeds 2560 characters', status: false};
+    }
+    if (character.links) {
+        for (const link of character.links) {
+            if (!validateCharacterLink(link)) {
+                return {message: 'Invalid link URL', status: false};
+            }
+        }
     }
     return {message: 'OK', status: true};
 }
