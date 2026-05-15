@@ -10,6 +10,8 @@ import {
     Fade,
     FormControlLabel,
     Grid,
+    Menu,
+    MenuItem,
     Paper,
     Switch,
     Tooltip,
@@ -28,7 +30,15 @@ import {
 } from '../../../types/characterLinks';
 import NotFound from '../../NotFound';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import {
+    exportAco,
+    exportCss,
+    exportGpl,
+    exportKpl,
+    exportTxt,
+} from '../../../helpers/colorExport';
 import {getPds} from '../../../helpers/getPds';
 
 const Item = styled(Paper)(({theme}) => ({
@@ -57,6 +67,9 @@ export function ViewCharacter() {
     const [showAltRef, setShowAltRef] = useState<boolean>(false);
 
     const [copyColorClicked, setCopyColorClicked] = useState<boolean>(false);
+    const [exportMenuAnchor, setExportMenuAnchor] = useState<
+        HTMLElement | undefined
+    >(undefined);
     const [nsfwBlurred, setNsfwBlurred] = useState<boolean>(false);
     const [nsfwFadingOut, setNsfwFadingOut] = useState<boolean>(false);
 
@@ -402,6 +415,88 @@ export function ViewCharacter() {
                                     },
                                 )}
                             </Grid>
+                            {character.colors?.length > 0 && (
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        marginTop: '0.75rem',
+                                    }}
+                                >
+                                    <Button
+                                        variant="outlined"
+                                        endIcon={<KeyboardArrowDownIcon />}
+                                        onClick={(e) =>
+                                            setExportMenuAnchor(e.currentTarget)
+                                        }
+                                    >
+                                        Export Colors
+                                    </Button>
+                                    <Menu
+                                        anchorEl={exportMenuAnchor}
+                                        open={Boolean(exportMenuAnchor)}
+                                        onClose={() =>
+                                            setExportMenuAnchor(undefined)
+                                        }
+                                    >
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportGpl(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            GIMP Palette (.gpl)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportKpl(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            Krita Palette (.kpl)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportCss(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            CSS Variables (.css)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportAco(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            Adobe Color (and CSP) (.aco)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportTxt(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            Plain Text (.txt)
+                                        </MenuItem>
+                                    </Menu>
+                                </Box>
+                            )}
                         </Box>
                         {/* Links */}
                         {validLinks.length > 0 && (

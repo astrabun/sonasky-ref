@@ -66,6 +66,7 @@ const changelogData = [
                 .
             </>,
             `Adjusts how colors are displayed on the character view page; they should be centered and consistent heights now.`,
+            `Adds "Export" button for color palettes in multiple formats.`,
         ],
         date: dayjs(`2026-05-14`),
         version: '1.4.0',
