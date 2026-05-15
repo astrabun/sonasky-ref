@@ -73,6 +73,7 @@ const changelogData = [
             `Add support for using quote posts for ref images.`,
             `Simple artist credit field (text only).`,
             `Add support for reordering character list.`,
+            `Add confirmation dialog when clearing colors from a ref sheet.`,
         ],
         date: dayjs(`2026-05-14`),
         version: '1.4.0',

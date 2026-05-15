@@ -68,6 +68,7 @@ function CharacterEditor(props: CharacterEditorProps) {
     const [color, setColor] = useColor('#000000');
     const [colorLabel, setColorLabel] = useState<string>('');
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [clearColorsDialogOpen, setClearColorsDialogOpen] = useState(false);
     const [createdAt, setCreatedAt] = useState<string | undefined>();
     const [editingColorIndex, setEditingColorIndex] = useState<
         number | undefined
@@ -804,7 +805,9 @@ function CharacterEditor(props: CharacterEditorProps) {
                                     <Button
                                         variant="contained"
                                         color="secondary"
-                                        onClick={handleClearColors}
+                                        onClick={() =>
+                                            setClearColorsDialogOpen(true)
+                                        }
                                     >
                                         Clear Colors
                                     </Button>
@@ -1023,6 +1026,35 @@ function CharacterEditor(props: CharacterEditorProps) {
                                 color="primary"
                             >
                                 {editingColorIndex !== null ? 'Save' : 'Add'}
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Dialog
+                        open={clearColorsDialogOpen}
+                        onClose={() => setClearColorsDialogOpen(false)}
+                    >
+                        <DialogTitle>Clear Colors</DialogTitle>
+                        <DialogContent>
+                            <Typography>
+                                Are you sure you want to clear all colors? This
+                                cannot be undone.
+                            </Typography>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                onClick={() => setClearColorsDialogOpen(false)}
+                                color="primary"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    handleClearColors();
+                                    setClearColorsDialogOpen(false);
+                                }}
+                                color="error"
+                            >
+                                Clear
                             </Button>
                         </DialogActions>
                     </Dialog>
