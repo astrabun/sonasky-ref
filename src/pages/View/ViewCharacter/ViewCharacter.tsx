@@ -63,7 +63,9 @@ export function ViewCharacter() {
     const [loadingText, setLoadingText] = useState<string>('Loading.');
     const transitionTime = 2000;
     const [refSheetImage, setRefSheetImage] = useState<string>('');
+    const [altText, setAltText] = useState<string>('Ref Sheet');
     const [altRefSheetImage, setAltRefSheetImage] = useState<string>('');
+    const [altAltText, setAltAltText] = useState<string>('Alt Ref Sheet');
     const [showAltRef, setShowAltRef] = useState<boolean>(false);
 
     const [copyColorClicked, setCopyColorClicked] = useState<boolean>(false);
@@ -136,6 +138,18 @@ export function ViewCharacter() {
                         const cid =
                             images[imageIndex]?.image.ref.$link ??
                             images[0].image.ref.$link;
+                        let imgAltText: string;
+                        if (
+                            images[imageIndex]?.alt &&
+                            images[imageIndex]?.alt !== ''
+                        ) {
+                            imgAltText = images[imageIndex].alt;
+                        } else if (images[0].alt && images[0].alt !== '') {
+                            imgAltText = images[0].alt;
+                        } else {
+                            imgAltText = 'Ref Sheet';
+                        }
+                        setAltText(imgAltText);
                         setRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split('/')[2]}/${cid}@jpeg`,
                         );
@@ -158,6 +172,18 @@ export function ViewCharacter() {
                         const cid =
                             images[imageIndex]?.image.ref.$link ??
                             images[0].image.ref.$link;
+                        let imgAltText: string;
+                        if (
+                            images[imageIndex]?.alt &&
+                            images[imageIndex]?.alt !== ''
+                        ) {
+                            imgAltText = images[imageIndex].alt;
+                        } else if (images[0].alt && images[0].alt !== '') {
+                            imgAltText = images[0].alt;
+                        } else {
+                            imgAltText = 'Alt Ref Sheet';
+                        }
+                        setAltAltText(imgAltText);
                         setAltRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split('/')[2]}/${cid}@jpeg`,
                         );
@@ -548,7 +574,7 @@ export function ViewCharacter() {
                                 <Typography variant="h5">Ref Sheet</Typography>
                                 <img
                                     src={`${refSheetImage}`}
-                                    alt="Ref Sheet"
+                                    alt={altText}
                                     style={{
                                         cursor: 'pointer',
                                         maxWidth: '100%',
@@ -569,7 +595,7 @@ export function ViewCharacter() {
                                 </Typography>
                                 <img
                                     src={`${altRefSheetImage}`}
-                                    alt="Alt Ref Sheet"
+                                    alt={altAltText}
                                     style={{
                                         cursor: 'pointer',
                                         maxWidth: '100%',

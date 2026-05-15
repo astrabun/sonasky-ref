@@ -57,7 +57,7 @@ export function exportGpl(colors: Color[], name: string): void {
     );
 }
 
-// Krita Palette (.kpl) — ZIP with colorset.xml
+// Krita Palette (.kpl) - ZIP with colorset.xml
 export function exportKpl(colors: Color[], name: string): void {
     const cols = Math.min(colors.length, 10);
 
@@ -91,7 +91,7 @@ ${colorXml}
     const enc = new TextEncoder();
     const zipBytes = zipSync({
         'colorset.xml': enc.encode(colorsetXml),
-        // MIME-type MUST be first and stored uncompressed — Krita detects KPL
+        // MIME-type MUST be first and stored uncompressed - Krita detects KPL
         // By scanning raw ZIP bytes for the mimetype string (like ODF/EPUB)
         mimetype: [enc.encode('application/x-krita-palette'), {level: 0}],
         'profiles.xml': enc.encode(profilesXml),
