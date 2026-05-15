@@ -66,8 +66,22 @@ function View() {
                     },
                 })
                 .then((response) => {
-                    const {data} = response;
-                    setSonaRecords((data as any).records);
+                    const {records} = response.data as any;
+                    const sorted = [...records].sort((a: any, b: any) => {
+                        const ai = a.value?.character?.displayIndex;
+                        const bi = b.value?.character?.displayIndex;
+                        if (ai === undefined && bi === undefined) {
+                            return 0;
+                        }
+                        if (ai === undefined) {
+                            return 1;
+                        }
+                        if (bi === undefined) {
+                            return -1;
+                        }
+                        return ai - bi;
+                    });
+                    setSonaRecords(sorted);
                 });
         }
     }, [repoData]);

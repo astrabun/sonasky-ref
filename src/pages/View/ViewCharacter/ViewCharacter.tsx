@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useState} from 'react';
+import {MarkdownDescription} from '../../../components/MarkdownDescription';
 import {useNavigate, useParams} from 'react-router';
 import Layout from '../../../layouts/View';
 import {
@@ -10,6 +11,8 @@ import {
     Fade,
     FormControlLabel,
     Grid,
+    Menu,
+    MenuItem,
     Paper,
     Switch,
     Tooltip,
@@ -21,9 +24,22 @@ import {Client, CredentialManager} from '@atcute/client';
 import type {} from '@atcute/atproto';
 import type {ActorIdentifier} from '@atcute/lexicons';
 import {HANDLE_RESOLVER_URL} from '../../../const';
+import {
+    type CharacterLink,
+    LINK_TYPE_LABELS,
+    validateCharacterLink,
+} from '../../../types/characterLinks';
 import NotFound from '../../NotFound';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import {
+    exportAco,
+    exportCss,
+    exportGpl,
+    exportKpl,
+    exportTxt,
+} from '../../../helpers/colorExport';
 import {getPds} from '../../../helpers/getPds';
 
 const Item = styled(Paper)(({theme}) => ({
@@ -48,10 +64,15 @@ export function ViewCharacter() {
     const [loadingText, setLoadingText] = useState<string>('Loading.');
     const transitionTime = 2000;
     const [refSheetImage, setRefSheetImage] = useState<string>('');
+    const [altText, setAltText] = useState<string>('Ref Sheet');
     const [altRefSheetImage, setAltRefSheetImage] = useState<string>('');
+    const [altAltText, setAltAltText] = useState<string>('Alt Ref Sheet');
     const [showAltRef, setShowAltRef] = useState<boolean>(false);
 
     const [copyColorClicked, setCopyColorClicked] = useState<boolean>(false);
+    const [exportMenuAnchor, setExportMenuAnchor] = useState<
+        HTMLElement | undefined
+    >(undefined);
     const [nsfwBlurred, setNsfwBlurred] = useState<boolean>(false);
     const [nsfwFadingOut, setNsfwFadingOut] = useState<boolean>(false);
 
@@ -70,6 +91,49 @@ export function ViewCharacter() {
     useEffect(() => {
         void handleGetPds();
     }, [blueskyHandleOrDID]);
+
+    const resolvePostImages = useCallback(
+        async (
+            atUri: string,
+        ): Promise<{cid: string; did: string; alt: string}[]> => {
+            const [, , did, , postRkey] = atUri.split('/');
+            const {data} = await rpc.get('com.atproto.repo.getRecord', {
+                params: {
+                    collection: 'app.bsky.feed.post',
+                    repo: did as ActorIdentifier,
+                    rkey: postRkey,
+                },
+            });
+            const {value} = data as any;
+            const {embed} = value;
+            if (embed?.$type === 'app.bsky.embed.images' && embed.images) {
+                return embed.images.map((img: any) => ({
+                    alt: img.alt ?? '',
+                    cid: img.image.ref.$link,
+                    did,
+                }));
+            }
+            if (embed?.$type === 'app.bsky.embed.record' && embed.record?.uri) {
+                return resolvePostImages(embed.record.uri);
+            }
+            if (embed?.$type === 'app.bsky.embed.recordWithMedia') {
+                const ownImages: {alt: string; cid: string; did: string}[] =
+                    embed.media?.images
+                        ? embed.media.images.map((img: any) => ({
+                              alt: img.alt ?? '',
+                              cid: img.image.ref.$link,
+                              did,
+                          }))
+                        : [];
+                const quotedImages = embed.record?.record?.uri
+                    ? await resolvePostImages(embed.record.record.uri)
+                    : [];
+                return [...ownImages, ...quotedImages];
+            }
+            return [];
+        },
+        [rpc],
+    );
 
     const loadCharacter = useCallback(async () => {
         try {
@@ -100,54 +164,54 @@ export function ViewCharacter() {
     }, [loadCharacter]);
 
     useEffect(() => {
-        if (character) {
-            if (character.refSheet && character.refSheet.startsWith('at://')) {
-                const [, , refSheetDid] = character.refSheet.split('/');
-                void rpc
-                    .get('com.atproto.repo.getRecord', {
-                        params: {
-                            collection: 'app.bsky.feed.post',
-                            repo: refSheetDid,
-                            rkey: character.refSheet.split('/').pop(),
-                        },
-                    })
-                    .then((response) => {
-                        const {data} = response;
-                        const {images} = ((data as any).value as any).embed;
-                        const imageIndex = character.refSheetImageIndex ?? 0;
-                        const cid =
-                            images[imageIndex]?.image.ref.$link ??
-                            images[0].image.ref.$link;
+        if (!character) {
+            return;
+        }
+
+        const loadImages = async () => {
+            if (character.refSheet?.startsWith('at://')) {
+                try {
+                    const images = await resolvePostImages(character.refSheet);
+                    const imageIndex = character.refSheetImageIndex ?? 0;
+                    const img = images[imageIndex] ?? images[0];
+                    if (img) {
+                        setAltText(
+                            images[imageIndex]?.alt ||
+                                images[0]?.alt ||
+                                'Ref Sheet',
+                        );
                         setRefSheetImage(
-                            `https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split('/')[2]}/${cid}@jpeg`,
+                            `https://cdn.bsky.app/img/feed_fullsize/plain/${img.did}/${img.cid}@jpeg`,
                         );
-                    });
+                    }
+                } catch {
+                    // Silently skip if post is inaccessible
+                }
             }
-            if (character.altRef && character.altRef.startsWith('at://')) {
-                const [, , altRefDid] = character.altRef.split('/');
-                void rpc
-                    .get('com.atproto.repo.getRecord', {
-                        params: {
-                            collection: 'app.bsky.feed.post',
-                            repo: altRefDid,
-                            rkey: character.altRef.split('/').pop(),
-                        },
-                    })
-                    .then((response) => {
-                        const {data} = response;
-                        const {images} = ((data as any).value as any).embed;
-                        const imageIndex = character.altRefImageIndex ?? 0;
-                        const cid =
-                            images[imageIndex]?.image.ref.$link ??
-                            images[0].image.ref.$link;
-                        setAltRefSheetImage(
-                            `https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split('/')[2]}/${cid}@jpeg`,
+            if (character.altRef?.startsWith('at://')) {
+                try {
+                    const images = await resolvePostImages(character.altRef);
+                    const imageIndex = character.altRefImageIndex ?? 0;
+                    const img = images[imageIndex] ?? images[0];
+                    if (img) {
+                        setAltAltText(
+                            images[imageIndex]?.alt ||
+                                images[0]?.alt ||
+                                'Alt Ref Sheet',
                         );
-                    });
+                        setAltRefSheetImage(
+                            `https://cdn.bsky.app/img/feed_fullsize/plain/${img.did}/${img.cid}@jpeg`,
+                        );
+                    }
+                } catch {
+                    // Silently skip if post is inaccessible
+                }
             }
             setError(false);
-        }
-    }, [character]);
+        };
+
+        void loadImages();
+    }, [character, resolvePostImages]);
 
     useEffect(() => {
         if (!character?.nsfw) {
@@ -227,6 +291,8 @@ export function ViewCharacter() {
         return `https://bsky.app/profile/${did}/post/${rkey}`;
     };
 
+    const validLinks = (character.links ?? []).filter(validateCharacterLink);
+
     return (
         <Layout>
             <div style={{marginTop: '2rem'}} />
@@ -294,27 +360,30 @@ export function ViewCharacter() {
                                         label="OK to draw SFW without asking"
                                     />
                                 )}
+                                {character.doNotDrawWithoutAskingSFW && (
+                                    <Chip
+                                        color="default"
+                                        label="Please ask before drawing SFW"
+                                    />
+                                )}
                                 {character.drawWithoutAskingNSFW && (
                                     <Chip
                                         color="error"
                                         label="OK to draw NSFW without asking"
                                     />
                                 )}
+                                {character.doNotDrawWithoutAskingNSFW && (
+                                    <Chip
+                                        color="default"
+                                        label="Please ask before drawing NSFW"
+                                    />
+                                )}
                             </Box>
                         </Box>
                         {character.description && (
-                            <>
-                                {character.description
-                                    .split('\n')
-                                    .map((line: string, index: number) => (
-                                        <Typography
-                                            key={index}
-                                            variant="body1"
-                                        >
-                                            {line}
-                                        </Typography>
-                                    ))}
-                            </>
+                            <MarkdownDescription
+                                content={character.description}
+                            />
                         )}
                         {/* Colors Grid */}
                         <Box sx={{marginBottom: '1rem', marginTop: '1rem'}}>
@@ -322,6 +391,7 @@ export function ViewCharacter() {
                                 container
                                 rowSpacing={1}
                                 columnSpacing={1}
+                                justifyContent="center"
                             >
                                 {character.colors.map(
                                     (color: any, idx: any) => {
@@ -333,58 +403,180 @@ export function ViewCharacter() {
                                             setCopyColorClicked(false);
                                         };
                                         return (
-                                            <Item key={`color-${idx}`}>
-                                                <Tooltip
-                                                    title={
-                                                        copyColorClicked
-                                                            ? 'Copied!'
-                                                            : defaultChipLabel
-                                                    }
-                                                >
-                                                    <Button
-                                                        fullWidth
-                                                        id={color.hex}
-                                                        component={Paper}
-                                                        sx={{
-                                                            backgroundColor: `#${color.hex}`,
-                                                            color: `${emphasize(`#${color.hex}`, 1)}`,
-                                                            justifyContent:
-                                                                'flex-start',
-                                                            padding: '1em',
-                                                            textAlign: 'left',
-                                                        }}
-                                                        onClick={() => {
-                                                            void navigator.clipboard.writeText(
-                                                                `#${color.hex}`,
-                                                            );
-                                                            handleCopyClick();
-                                                        }}
-                                                        onMouseLeave={
-                                                            handleMouseLeave
+                                            <Grid
+                                                size={{md: 2, sm: 4, xs: 6}}
+                                                key={`color-${idx}`}
+                                            >
+                                                <Item sx={{height: '100%'}}>
+                                                    <Tooltip
+                                                        title={
+                                                            copyColorClicked
+                                                                ? 'Copied!'
+                                                                : defaultChipLabel
                                                         }
                                                     >
-                                                        <Box
+                                                        <Button
+                                                            fullWidth
+                                                            id={color.hex}
+                                                            component={Paper}
                                                             sx={{
-                                                                display: 'flex',
-                                                                flexDirection:
-                                                                    'column',
+                                                                backgroundColor: `#${color.hex}`,
+                                                                color: `${emphasize(`#${color.hex}`, 1)}`,
+                                                                height: '100%',
+                                                                justifyContent:
+                                                                    'flex-start',
+                                                                padding: '1em',
+                                                                textAlign:
+                                                                    'left',
                                                             }}
+                                                            onClick={() => {
+                                                                void navigator.clipboard.writeText(
+                                                                    `#${color.hex}`,
+                                                                );
+                                                                handleCopyClick();
+                                                            }}
+                                                            onMouseLeave={
+                                                                handleMouseLeave
+                                                            }
                                                         >
-                                                            <Typography>
-                                                                {color.label}
-                                                            </Typography>
-                                                            <Typography>
-                                                                #{color.hex}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Button>
-                                                </Tooltip>
-                                            </Item>
+                                                            <Box
+                                                                sx={{
+                                                                    display:
+                                                                        'flex',
+                                                                    flexDirection:
+                                                                        'column',
+                                                                }}
+                                                            >
+                                                                <Typography>
+                                                                    {
+                                                                        color.label
+                                                                    }
+                                                                </Typography>
+                                                                <Typography>
+                                                                    #{color.hex}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Button>
+                                                    </Tooltip>
+                                                </Item>
+                                            </Grid>
                                         );
                                     },
                                 )}
                             </Grid>
+                            {character.colors?.length > 0 && (
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        marginTop: '0.75rem',
+                                    }}
+                                >
+                                    <Button
+                                        variant="outlined"
+                                        endIcon={<KeyboardArrowDownIcon />}
+                                        onClick={(e) =>
+                                            setExportMenuAnchor(e.currentTarget)
+                                        }
+                                    >
+                                        Export Colors
+                                    </Button>
+                                    <Menu
+                                        anchorEl={exportMenuAnchor}
+                                        open={Boolean(exportMenuAnchor)}
+                                        onClose={() =>
+                                            setExportMenuAnchor(undefined)
+                                        }
+                                    >
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportGpl(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            GIMP Palette (.gpl)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportKpl(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            Krita Palette (.kpl)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportCss(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            CSS Variables (.css)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportAco(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            Adobe Color (and CSP) (.aco)
+                                        </MenuItem>
+                                        <MenuItem
+                                            onClick={() => {
+                                                exportTxt(
+                                                    character.colors,
+                                                    character.name,
+                                                );
+                                                setExportMenuAnchor(undefined);
+                                            }}
+                                        >
+                                            Plain Text (.txt)
+                                        </MenuItem>
+                                    </Menu>
+                                </Box>
+                            )}
                         </Box>
+                        {/* Links */}
+                        {validLinks.length > 0 && (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '0.5rem',
+                                    marginBottom: '1rem',
+                                    marginTop: '1rem',
+                                }}
+                            >
+                                {validLinks.map(
+                                    (link: CharacterLink, idx: number) => (
+                                        <Button
+                                            key={idx}
+                                            variant="outlined"
+                                            size="small"
+                                            component="a"
+                                            href={link.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            startIcon={<OpenInNewIcon />}
+                                        >
+                                            {link.label ||
+                                                LINK_TYPE_LABELS[link.type]}
+                                        </Button>
+                                    ),
+                                )}
+                            </Box>
+                        )}
                         {/* Ref Sheet */}
                         {character.altRef && (
                             <FormControlLabel
@@ -405,7 +597,7 @@ export function ViewCharacter() {
                                 <Typography variant="h5">Ref Sheet</Typography>
                                 <img
                                     src={`${refSheetImage}`}
-                                    alt="Ref Sheet"
+                                    alt={altText}
                                     style={{
                                         cursor: 'pointer',
                                         maxWidth: '100%',
@@ -417,6 +609,11 @@ export function ViewCharacter() {
                                         )
                                     }
                                 />
+                                {character.refSheetCredit && (
+                                    <Typography variant="caption">
+                                        Credit: {character.refSheetCredit}
+                                    </Typography>
+                                )}
                             </Box>
                         )}
                         {showAltRef && altRefSheetImage && (
@@ -426,7 +623,7 @@ export function ViewCharacter() {
                                 </Typography>
                                 <img
                                     src={`${altRefSheetImage}`}
-                                    alt="Alt Ref Sheet"
+                                    alt={altAltText}
                                     style={{
                                         cursor: 'pointer',
                                         maxWidth: '100%',
@@ -438,6 +635,11 @@ export function ViewCharacter() {
                                         )
                                     }
                                 />
+                                {character.altRefCredit && (
+                                    <Typography variant="caption">
+                                        Credit: {character.altRefCredit}
+                                    </Typography>
+                                )}
                             </Box>
                         )}
                     </div>

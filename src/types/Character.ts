@@ -1,3 +1,5 @@
+import {type CharacterLink, validateCharacterLink} from './characterLinks';
+
 export interface Character {
     name: string; // Required, max length 128 characters
     species?: string; // Optional, max length 64 characters
@@ -5,12 +7,18 @@ export interface Character {
     pronouns?: string; // Optional, max length 32 characters
     refSheet?: string; // Optional, ref to a app.bsky.feed.post
     refSheetImageIndex?: number; // Optional, index of image in refSheet post
+    refSheetCredit?: string; // Optional, credit for the ref sheet artist, max 256 characters
     altRef?: string; // Optional, ref to a app.bsky.feed.post
     altRefImageIndex?: number; // Optional, index of image in altRef post
+    altRefCredit?: string; // Optional, credit for the alt ref artist, max 256 characters
     drawWithoutAskingSFW?: boolean; // Optional
+    doNotDrawWithoutAskingSFW?: boolean; // Optional
     drawWithoutAskingNSFW?: boolean; // Optional
+    doNotDrawWithoutAskingNSFW?: boolean; // Optional
     nsfw?: boolean; // Optional
     description?: string; // Optional, max length 2560 characters
+    links?: CharacterLink[]; // Optional, external profile links
+    displayIndex?: number; // Optional, for custom display ordering
 }
 
 export const CharacterTypeKeys = [
@@ -20,12 +28,18 @@ export const CharacterTypeKeys = [
     'pronouns',
     'refSheet',
     'refSheetImageIndex',
+    'refSheetCredit',
     'altRef',
     'altRefImageIndex',
+    'altRefCredit',
     'drawWithoutAskingSFW',
+    'doNotDrawWithoutAskingSFW',
     'drawWithoutAskingNSFW',
+    'doNotDrawWithoutAskingNSFW',
     'nsfw',
     'description',
+    'links',
+    'displayIndex',
 ];
 
 // Validation function
@@ -58,11 +72,30 @@ export function validateCharacter(character: Character): {
             }
         }
     }
+    if (character.refSheetCredit && character.refSheetCredit.length > 256) {
+        return {
+            message: 'Ref sheet credit exceeds 256 characters',
+            status: false,
+        };
+    }
+    if (character.altRefCredit && character.altRefCredit.length > 256) {
+        return {
+            message: 'Alt ref credit exceeds 256 characters',
+            status: false,
+        };
+    }
     if (character.pronouns && character.pronouns.length > 32) {
         return {message: 'Pronouns exceed 32 characters', status: false};
     }
     if (character.description && character.description.length > 2560) {
         return {message: 'Description exceeds 2560 characters', status: false};
+    }
+    if (character.links) {
+        for (const link of character.links) {
+            if (!validateCharacterLink(link)) {
+                return {message: 'Invalid link URL', status: false};
+            }
+        }
     }
     return {message: 'OK', status: true};
 }
