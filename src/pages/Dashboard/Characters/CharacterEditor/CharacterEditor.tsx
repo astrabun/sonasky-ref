@@ -104,17 +104,16 @@ function CharacterEditor(props: CharacterEditorProps) {
                 }
                 if (embed?.$type === 'app.bsky.embed.recordWithMedia') {
                     // Quote post that also has its own images
-                    const ownImages: {cid: string; did: string}[] =
-                        embed.media?.images
-                            ? embed.media.images.map((img: any) => ({
-                                  cid: img.image.ref.toString(),
-                                  did,
-                              }))
-                            : [];
-                    const quotedImages =
-                        embed.record?.record?.uri
-                            ? await fetchPostImages(embed.record.record.uri)
-                            : [];
+                    const ownImages: {cid: string; did: string}[] = embed.media
+                        ?.images
+                        ? embed.media.images.map((img: any) => ({
+                              cid: img.image.ref.toString(),
+                              did,
+                          }))
+                        : [];
+                    const quotedImages = embed.record?.record?.uri
+                        ? await fetchPostImages(embed.record.record.uri)
+                        : [];
                     return [...ownImages, ...quotedImages];
                 }
             } catch {
@@ -821,46 +820,110 @@ function CharacterEditor(props: CharacterEditorProps) {
                             </Button>
                         </Box>
                         <Box>
-                            <Typography variant="body2" sx={{fontWeight: 500, mb: 0.5}}>Drawing Permissions</Typography>
-                            <Box sx={{alignItems: 'center', display: 'grid', gap: 0, gridTemplateColumns: 'auto 1fr 1fr'}}>
+                            <Typography
+                                variant="body2"
+                                sx={{fontWeight: 500, mb: 0.5}}
+                            >
+                                Drawing Permissions
+                            </Typography>
+                            <Box
+                                sx={{
+                                    alignItems: 'center',
+                                    display: 'grid',
+                                    gap: 0,
+                                    gridTemplateColumns: 'auto 1fr 1fr',
+                                }}
+                            >
                                 <Box />
-                                <Typography variant="caption" align="center" sx={{fontWeight: 600}}>SFW</Typography>
-                                <Typography variant="caption" align="center" sx={{fontWeight: 600}}>NSFW</Typography>
-                                <Typography variant="body2">Draw Without Asking</Typography>
-                                <Box sx={{display: 'flex', justifyContent: 'center'}}>
+                                <Typography
+                                    variant="caption"
+                                    align="center"
+                                    sx={{fontWeight: 600}}
+                                >
+                                    SFW
+                                </Typography>
+                                <Typography
+                                    variant="caption"
+                                    align="center"
+                                    sx={{fontWeight: 600}}
+                                >
+                                    NSFW
+                                </Typography>
+                                <Typography variant="body2">
+                                    Draw Without Asking
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <Checkbox
-                                        checked={Boolean(character.drawWithoutAskingSFW)}
+                                        checked={Boolean(
+                                            character.drawWithoutAskingSFW,
+                                        )}
                                         onChange={handleChange}
                                         name="drawWithoutAskingSFW"
-                                        disabled={Boolean(character.doNotDrawWithoutAskingSFW)}
+                                        disabled={Boolean(
+                                            character.doNotDrawWithoutAskingSFW,
+                                        )}
                                         size="small"
                                     />
                                 </Box>
-                                <Box sx={{display: 'flex', justifyContent: 'center'}}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <Checkbox
-                                        checked={Boolean(character.drawWithoutAskingNSFW)}
+                                        checked={Boolean(
+                                            character.drawWithoutAskingNSFW,
+                                        )}
                                         onChange={handleChange}
                                         name="drawWithoutAskingNSFW"
-                                        disabled={Boolean(character.doNotDrawWithoutAskingNSFW)}
+                                        disabled={Boolean(
+                                            character.doNotDrawWithoutAskingNSFW,
+                                        )}
                                         size="small"
                                     />
                                 </Box>
-                                <Typography variant="body2">Do Not Draw Without Asking</Typography>
-                                <Box sx={{display: 'flex', justifyContent: 'center'}}>
+                                <Typography variant="body2">
+                                    Do Not Draw Without Asking
+                                </Typography>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <Checkbox
-                                        checked={Boolean(character.doNotDrawWithoutAskingSFW)}
+                                        checked={Boolean(
+                                            character.doNotDrawWithoutAskingSFW,
+                                        )}
                                         onChange={handleChange}
                                         name="doNotDrawWithoutAskingSFW"
-                                        disabled={Boolean(character.drawWithoutAskingSFW)}
+                                        disabled={Boolean(
+                                            character.drawWithoutAskingSFW,
+                                        )}
                                         size="small"
                                     />
                                 </Box>
-                                <Box sx={{display: 'flex', justifyContent: 'center'}}>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <Checkbox
-                                        checked={Boolean(character.doNotDrawWithoutAskingNSFW)}
+                                        checked={Boolean(
+                                            character.doNotDrawWithoutAskingNSFW,
+                                        )}
                                         onChange={handleChange}
                                         name="doNotDrawWithoutAskingNSFW"
-                                        disabled={Boolean(character.drawWithoutAskingNSFW)}
+                                        disabled={Boolean(
+                                            character.drawWithoutAskingNSFW,
+                                        )}
                                         size="small"
                                     />
                                 </Box>

@@ -18,6 +18,7 @@ export interface Character {
     nsfw?: boolean; // Optional
     description?: string; // Optional, max length 2560 characters
     links?: CharacterLink[]; // Optional, external profile links
+    displayIndex?: number; // Optional, for custom display ordering
 }
 
 export const CharacterTypeKeys = [
@@ -38,6 +39,7 @@ export const CharacterTypeKeys = [
     'nsfw',
     'description',
     'links',
+    'displayIndex',
 ];
 
 // Validation function
@@ -71,10 +73,16 @@ export function validateCharacter(character: Character): {
         }
     }
     if (character.refSheetCredit && character.refSheetCredit.length > 256) {
-        return {message: 'Ref sheet credit exceeds 256 characters', status: false};
+        return {
+            message: 'Ref sheet credit exceeds 256 characters',
+            status: false,
+        };
     }
     if (character.altRefCredit && character.altRefCredit.length > 256) {
-        return {message: 'Alt ref credit exceeds 256 characters', status: false};
+        return {
+            message: 'Alt ref credit exceeds 256 characters',
+            status: false,
+        };
     }
     if (character.pronouns && character.pronouns.length > 32) {
         return {message: 'Pronouns exceed 32 characters', status: false};

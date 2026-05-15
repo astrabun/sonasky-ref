@@ -112,10 +112,7 @@ export function ViewCharacter() {
                     did,
                 }));
             }
-            if (
-                embed?.$type === 'app.bsky.embed.record' &&
-                embed.record?.uri
-            ) {
+            if (embed?.$type === 'app.bsky.embed.record' && embed.record?.uri) {
                 return resolvePostImages(embed.record.uri);
             }
             if (embed?.$type === 'app.bsky.embed.recordWithMedia') {
@@ -166,7 +163,9 @@ export function ViewCharacter() {
     }, [loadCharacter]);
 
     useEffect(() => {
-        if (!character) {return;}
+        if (!character) {
+            return;
+        }
 
         const loadImages = async () => {
             if (character.refSheet?.startsWith('at://')) {
@@ -176,7 +175,9 @@ export function ViewCharacter() {
                     const img = images[imageIndex] ?? images[0];
                     if (img) {
                         setAltText(
-                            images[imageIndex]?.alt || images[0]?.alt || 'Ref Sheet',
+                            images[imageIndex]?.alt ||
+                                images[0]?.alt ||
+                                'Ref Sheet',
                         );
                         setRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${img.did}/${img.cid}@jpeg`,
@@ -193,7 +194,9 @@ export function ViewCharacter() {
                     const img = images[imageIndex] ?? images[0];
                     if (img) {
                         setAltAltText(
-                            images[imageIndex]?.alt || images[0]?.alt || 'Alt Ref Sheet',
+                            images[imageIndex]?.alt ||
+                                images[0]?.alt ||
+                                'Alt Ref Sheet',
                         );
                         setAltRefSheetImage(
                             `https://cdn.bsky.app/img/feed_fullsize/plain/${img.did}/${img.cid}@jpeg`,
