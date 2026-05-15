@@ -53,7 +53,19 @@ const changelogData = [
     {
         changes: [
             `Adds a feature for adding external links to a ref sheet page; if you've got a refsheet on FA or an extra image to link to on Bluesky, for example, you can add it here.`,
-            <>If an external site you would like to link to is not yet supported, <a href="https://github.com/astrabun/sonasky-ref/issues/new?template=external-link-domain.md" target="_blank" rel="noopener noreferrer">open an issue on Github</a>.</>,
+            <>
+                If an external site you would like to link to is not yet
+                supported,{' '}
+                <a
+                    href="https://github.com/astrabun/sonasky-ref/issues/new?template=external-link-domain.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    open an issue on Github
+                </a>
+                .
+            </>,
+            `Adjusts how colors are displayed on the character view page; they should be centered and consistent heights now.`,
         ],
         date: dayjs(`2026-05-14`),
         version: '1.4.0',

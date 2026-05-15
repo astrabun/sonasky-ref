@@ -41,10 +41,7 @@ export function validateCharacterLink(link: CharacterLink): boolean {
         case 'bluesky': {
             try {
                 const url = new URL(link.url);
-                return (
-                    url.protocol === 'https:' &&
-                    url.hostname === 'bsky.app'
-                );
+                return url.protocol === 'https:' && url.hostname === 'bsky.app';
             } catch {
                 return false;
             }
@@ -53,8 +50,7 @@ export function validateCharacterLink(link: CharacterLink): boolean {
             try {
                 const url = new URL(link.url);
                 return (
-                    url.protocol === 'https:' &&
-                    url.hostname === 'refsheet.net'
+                    url.protocol === 'https:' && url.hostname === 'refsheet.net'
                 );
             } catch {
                 return false;

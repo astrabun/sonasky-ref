@@ -329,6 +329,7 @@ export function ViewCharacter() {
                                 container
                                 rowSpacing={1}
                                 columnSpacing={1}
+                                justifyContent="center"
                             >
                                 {character.colors.map(
                                     (color: any, idx: any) => {
@@ -340,53 +341,63 @@ export function ViewCharacter() {
                                             setCopyColorClicked(false);
                                         };
                                         return (
-                                            <Item key={`color-${idx}`}>
-                                                <Tooltip
-                                                    title={
-                                                        copyColorClicked
-                                                            ? 'Copied!'
-                                                            : defaultChipLabel
-                                                    }
-                                                >
-                                                    <Button
-                                                        fullWidth
-                                                        id={color.hex}
-                                                        component={Paper}
-                                                        sx={{
-                                                            backgroundColor: `#${color.hex}`,
-                                                            color: `${emphasize(`#${color.hex}`, 1)}`,
-                                                            justifyContent:
-                                                                'flex-start',
-                                                            padding: '1em',
-                                                            textAlign: 'left',
-                                                        }}
-                                                        onClick={() => {
-                                                            void navigator.clipboard.writeText(
-                                                                `#${color.hex}`,
-                                                            );
-                                                            handleCopyClick();
-                                                        }}
-                                                        onMouseLeave={
-                                                            handleMouseLeave
+                                            <Grid
+                                                size={{md: 2, sm: 4, xs: 6}}
+                                                key={`color-${idx}`}
+                                            >
+                                                <Item sx={{height: '100%'}}>
+                                                    <Tooltip
+                                                        title={
+                                                            copyColorClicked
+                                                                ? 'Copied!'
+                                                                : defaultChipLabel
                                                         }
                                                     >
-                                                        <Box
+                                                        <Button
+                                                            fullWidth
+                                                            id={color.hex}
+                                                            component={Paper}
                                                             sx={{
-                                                                display: 'flex',
-                                                                flexDirection:
-                                                                    'column',
+                                                                backgroundColor: `#${color.hex}`,
+                                                                color: `${emphasize(`#${color.hex}`, 1)}`,
+                                                                height: '100%',
+                                                                justifyContent:
+                                                                    'flex-start',
+                                                                padding: '1em',
+                                                                textAlign:
+                                                                    'left',
                                                             }}
+                                                            onClick={() => {
+                                                                void navigator.clipboard.writeText(
+                                                                    `#${color.hex}`,
+                                                                );
+                                                                handleCopyClick();
+                                                            }}
+                                                            onMouseLeave={
+                                                                handleMouseLeave
+                                                            }
                                                         >
-                                                            <Typography>
-                                                                {color.label}
-                                                            </Typography>
-                                                            <Typography>
-                                                                #{color.hex}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Button>
-                                                </Tooltip>
-                                            </Item>
+                                                            <Box
+                                                                sx={{
+                                                                    display:
+                                                                        'flex',
+                                                                    flexDirection:
+                                                                        'column',
+                                                                }}
+                                                            >
+                                                                <Typography>
+                                                                    {
+                                                                        color.label
+                                                                    }
+                                                                </Typography>
+                                                                <Typography>
+                                                                    #{color.hex}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Button>
+                                                    </Tooltip>
+                                                </Item>
+                                            </Grid>
                                         );
                                     },
                                 )}
