@@ -68,6 +68,7 @@ const changelogData = [
             `Adjusts how colors are displayed on the character view page; they should be centered and consistent heights now.`,
             `Adds "Export" button for color palettes in multiple formats.`,
             `Pulls alt text from Bluesky images if present.`,
+            `Adds clarity on character editor/character viewer for when it is okay to draw the character with additional checkboxes for "ok-to-draw" scenarios.`,
         ],
         date: dayjs(`2026-05-14`),
         version: '1.4.0',

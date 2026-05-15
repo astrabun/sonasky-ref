@@ -10,7 +10,9 @@ export interface Character {
     altRef?: string; // Optional, ref to a app.bsky.feed.post
     altRefImageIndex?: number; // Optional, index of image in altRef post
     drawWithoutAskingSFW?: boolean; // Optional
+    doNotDrawWithoutAskingSFW?: boolean; // Optional
     drawWithoutAskingNSFW?: boolean; // Optional
+    doNotDrawWithoutAskingNSFW?: boolean; // Optional
     nsfw?: boolean; // Optional
     description?: string; // Optional, max length 2560 characters
     links?: CharacterLink[]; // Optional, external profile links
@@ -26,7 +28,9 @@ export const CharacterTypeKeys = [
     'altRef',
     'altRefImageIndex',
     'drawWithoutAskingSFW',
+    'doNotDrawWithoutAskingSFW',
     'drawWithoutAskingNSFW',
+    'doNotDrawWithoutAskingNSFW',
     'nsfw',
     'description',
     'links',

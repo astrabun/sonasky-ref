@@ -340,10 +340,22 @@ export function ViewCharacter() {
                                         label="OK to draw SFW without asking"
                                     />
                                 )}
+                                {character.doNotDrawWithoutAskingSFW && (
+                                    <Chip
+                                        color="default"
+                                        label="Please ask before drawing SFW"
+                                    />
+                                )}
                                 {character.drawWithoutAskingNSFW && (
                                     <Chip
                                         color="error"
                                         label="OK to draw NSFW without asking"
+                                    />
+                                )}
+                                {character.doNotDrawWithoutAskingNSFW && (
+                                    <Chip
+                                        color="default"
+                                        label="Please ask before drawing NSFW"
                                     />
                                 )}
                             </Box>
