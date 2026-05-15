@@ -893,6 +893,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                         </DialogTitle>
                         <DialogContent>
                             <ColorPicker
+                                hideAlpha
                                 hideInput={['rgb', 'hsv']}
                                 color={color}
                                 onChange={setColor}

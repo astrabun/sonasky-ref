@@ -69,6 +69,7 @@ const changelogData = [
             `Adds "Export" button for color palettes in multiple formats.`,
             `Pulls alt text from Bluesky images if present.`,
             `Adds clarity on character editor/character viewer for when it is okay to draw the character with additional checkboxes for "ok-to-draw" scenarios.`,
+            `Hide transparency slider for color picker as it was not intended to be present.`,
         ],
         date: dayjs(`2026-05-14`),
         version: '1.4.0',
