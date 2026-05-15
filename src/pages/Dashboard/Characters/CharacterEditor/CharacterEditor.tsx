@@ -951,6 +951,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                             multiline
                             rows={4}
                             inputProps={{maxLength: 2560}}
+                            helperText="Supports markdown: **bold**, *italic*, ~~strikethrough~~, <u>underline</u>, # Heading, tables, - [ ] checklists"
                         />
                         <Button
                             type="submit"

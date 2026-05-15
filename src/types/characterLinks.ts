@@ -1,4 +1,8 @@
-export type CharacterLinkType = 'furaffinity' | 'bluesky' | 'refsheetdotnet' | 'toyhouse';
+export type CharacterLinkType =
+    | 'furaffinity'
+    | 'bluesky'
+    | 'refsheetdotnet'
+    | 'toyhouse';
 
 export interface CharacterLink {
     type: CharacterLinkType;

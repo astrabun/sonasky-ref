@@ -1,4 +1,5 @@
 import {useCallback, useEffect, useState} from 'react';
+import {MarkdownDescription} from '../../../components/MarkdownDescription';
 import {useNavigate, useParams} from 'react-router';
 import Layout from '../../../layouts/View';
 import {
@@ -380,18 +381,9 @@ export function ViewCharacter() {
                             </Box>
                         </Box>
                         {character.description && (
-                            <>
-                                {character.description
-                                    .split('\n')
-                                    .map((line: string, index: number) => (
-                                        <Typography
-                                            key={index}
-                                            variant="body1"
-                                        >
-                                            {line}
-                                        </Typography>
-                                    ))}
-                            </>
+                            <MarkdownDescription
+                                content={character.description}
+                            />
                         )}
                         {/* Colors Grid */}
                         <Box sx={{marginBottom: '1rem', marginTop: '1rem'}}>
