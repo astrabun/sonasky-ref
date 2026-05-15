@@ -1,4 +1,4 @@
-export type CharacterLinkType = 'furaffinity' | 'bluesky' | 'refsheetdotnet';
+export type CharacterLinkType = 'furaffinity' | 'bluesky' | 'refsheetdotnet' | 'toyhouse';
 
 export interface CharacterLink {
     type: CharacterLinkType;
@@ -10,18 +10,21 @@ export const LINK_TYPE_LABELS: Record<CharacterLinkType, string> = {
     bluesky: 'Bluesky',
     furaffinity: 'FurAffinity',
     refsheetdotnet: 'Refsheet.net',
+    toyhouse: 'Toyhouse',
 };
 
 export const LINK_TYPE_HINTS: Record<CharacterLinkType, string> = {
     bluesky: 'Must be on https://bsky.app',
     furaffinity: 'Must be on https://furaffinity.net',
     refsheetdotnet: 'Must be on https://refsheet.net',
+    toyhouse: 'Must be on https://toyhou.se/',
 };
 
 export const ALLOWED_LINK_TYPES: CharacterLinkType[] = [
     'furaffinity',
     'bluesky',
     'refsheetdotnet',
+    'toyhouse',
 ];
 
 export function validateCharacterLink(link: CharacterLink): boolean {
@@ -51,6 +54,16 @@ export function validateCharacterLink(link: CharacterLink): boolean {
                 const url = new URL(link.url);
                 return (
                     url.protocol === 'https:' && url.hostname === 'refsheet.net'
+                );
+            } catch {
+                return false;
+            }
+        }
+        case 'toyhouse': {
+            try {
+                const url = new URL(link.url);
+                return (
+                    url.protocol === 'https:' && url.hostname === 'toyhou.se'
                 );
             } catch {
                 return false;
