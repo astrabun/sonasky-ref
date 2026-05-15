@@ -91,6 +91,52 @@ export function ViewCharacter() {
         void handleGetPds();
     }, [blueskyHandleOrDID]);
 
+    const resolvePostImages = useCallback(
+        async (
+            atUri: string,
+        ): Promise<{cid: string; did: string; alt: string}[]> => {
+            const [, , did, , postRkey] = atUri.split('/');
+            const {data} = await rpc.get('com.atproto.repo.getRecord', {
+                params: {
+                    collection: 'app.bsky.feed.post',
+                    repo: did as ActorIdentifier,
+                    rkey: postRkey,
+                },
+            });
+            const {value} = data as any;
+            const {embed} = value;
+            if (embed?.$type === 'app.bsky.embed.images' && embed.images) {
+                return embed.images.map((img: any) => ({
+                    alt: img.alt ?? '',
+                    cid: img.image.ref.$link,
+                    did,
+                }));
+            }
+            if (
+                embed?.$type === 'app.bsky.embed.record' &&
+                embed.record?.uri
+            ) {
+                return resolvePostImages(embed.record.uri);
+            }
+            if (embed?.$type === 'app.bsky.embed.recordWithMedia') {
+                const ownImages: {alt: string; cid: string; did: string}[] =
+                    embed.media?.images
+                        ? embed.media.images.map((img: any) => ({
+                              alt: img.alt ?? '',
+                              cid: img.image.ref.$link,
+                              did,
+                          }))
+                        : [];
+                const quotedImages = embed.record?.record?.uri
+                    ? await resolvePostImages(embed.record.record.uri)
+                    : [];
+                return [...ownImages, ...quotedImages];
+            }
+            return [];
+        },
+        [rpc],
+    );
+
     const loadCharacter = useCallback(async () => {
         try {
             const sonaRecords = await rpc.get('com.atproto.repo.listRecords', {
@@ -120,78 +166,48 @@ export function ViewCharacter() {
     }, [loadCharacter]);
 
     useEffect(() => {
-        if (character) {
-            if (character.refSheet && character.refSheet.startsWith('at://')) {
-                const [, , refSheetDid] = character.refSheet.split('/');
-                void rpc
-                    .get('com.atproto.repo.getRecord', {
-                        params: {
-                            collection: 'app.bsky.feed.post',
-                            repo: refSheetDid,
-                            rkey: character.refSheet.split('/').pop(),
-                        },
-                    })
-                    .then((response) => {
-                        const {data} = response;
-                        const {images} = ((data as any).value as any).embed;
-                        const imageIndex = character.refSheetImageIndex ?? 0;
-                        const cid =
-                            images[imageIndex]?.image.ref.$link ??
-                            images[0].image.ref.$link;
-                        let imgAltText: string;
-                        if (
-                            images[imageIndex]?.alt &&
-                            images[imageIndex]?.alt !== ''
-                        ) {
-                            imgAltText = images[imageIndex].alt;
-                        } else if (images[0].alt && images[0].alt !== '') {
-                            imgAltText = images[0].alt;
-                        } else {
-                            imgAltText = 'Ref Sheet';
-                        }
-                        setAltText(imgAltText);
+        if (!character) {return;}
+
+        const loadImages = async () => {
+            if (character.refSheet?.startsWith('at://')) {
+                try {
+                    const images = await resolvePostImages(character.refSheet);
+                    const imageIndex = character.refSheetImageIndex ?? 0;
+                    const img = images[imageIndex] ?? images[0];
+                    if (img) {
+                        setAltText(
+                            images[imageIndex]?.alt || images[0]?.alt || 'Ref Sheet',
+                        );
                         setRefSheetImage(
-                            `https://cdn.bsky.app/img/feed_fullsize/plain/${character.refSheet.split('/')[2]}/${cid}@jpeg`,
+                            `https://cdn.bsky.app/img/feed_fullsize/plain/${img.did}/${img.cid}@jpeg`,
                         );
-                    });
+                    }
+                } catch {
+                    // Silently skip if post is inaccessible
+                }
             }
-            if (character.altRef && character.altRef.startsWith('at://')) {
-                const [, , altRefDid] = character.altRef.split('/');
-                void rpc
-                    .get('com.atproto.repo.getRecord', {
-                        params: {
-                            collection: 'app.bsky.feed.post',
-                            repo: altRefDid,
-                            rkey: character.altRef.split('/').pop(),
-                        },
-                    })
-                    .then((response) => {
-                        const {data} = response;
-                        const {images} = ((data as any).value as any).embed;
-                        const imageIndex = character.altRefImageIndex ?? 0;
-                        const cid =
-                            images[imageIndex]?.image.ref.$link ??
-                            images[0].image.ref.$link;
-                        let imgAltText: string;
-                        if (
-                            images[imageIndex]?.alt &&
-                            images[imageIndex]?.alt !== ''
-                        ) {
-                            imgAltText = images[imageIndex].alt;
-                        } else if (images[0].alt && images[0].alt !== '') {
-                            imgAltText = images[0].alt;
-                        } else {
-                            imgAltText = 'Alt Ref Sheet';
-                        }
-                        setAltAltText(imgAltText);
-                        setAltRefSheetImage(
-                            `https://cdn.bsky.app/img/feed_fullsize/plain/${character.altRef.split('/')[2]}/${cid}@jpeg`,
+            if (character.altRef?.startsWith('at://')) {
+                try {
+                    const images = await resolvePostImages(character.altRef);
+                    const imageIndex = character.altRefImageIndex ?? 0;
+                    const img = images[imageIndex] ?? images[0];
+                    if (img) {
+                        setAltAltText(
+                            images[imageIndex]?.alt || images[0]?.alt || 'Alt Ref Sheet',
                         );
-                    });
+                        setAltRefSheetImage(
+                            `https://cdn.bsky.app/img/feed_fullsize/plain/${img.did}/${img.cid}@jpeg`,
+                        );
+                    }
+                } catch {
+                    // Silently skip if post is inaccessible
+                }
             }
             setError(false);
-        }
-    }, [character]);
+        };
+
+        void loadImages();
+    }, [character, resolvePostImages]);
 
     useEffect(() => {
         if (!character?.nsfw) {

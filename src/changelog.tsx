@@ -70,6 +70,7 @@ const changelogData = [
             `Pulls alt text from Bluesky images if present.`,
             `Adds clarity on character editor/character viewer for when it is okay to draw the character with additional checkboxes for "ok-to-draw" scenarios.`,
             `Hide transparency slider for color picker as it was not intended to be present.`,
+            `Add support for using quote posts for ref images.`,
         ],
         date: dayjs(`2026-05-14`),
         version: '1.4.0',

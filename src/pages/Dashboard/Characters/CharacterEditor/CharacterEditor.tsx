@@ -72,11 +72,15 @@ function CharacterEditor(props: CharacterEditorProps) {
     const [editingColorIndex, setEditingColorIndex] = useState<
         number | undefined
     >();
-    const [refSheetImages, setRefSheetImages] = useState<string[]>([]);
-    const [altRefImages, setAltRefImages] = useState<string[]>([]);
+    const [refSheetImages, setRefSheetImages] = useState<
+        {cid: string; did: string}[]
+    >([]);
+    const [altRefImages, setAltRefImages] = useState<
+        {cid: string; did: string}[]
+    >([]);
 
     const fetchPostImages = useCallback(
-        async (atUri: string): Promise<string[]> => {
+        async (atUri: string): Promise<{cid: string; did: string}[]> => {
             try {
                 const [, , did, , postRkey] = atUri.split('/');
                 const response = await pdsAgent.com.atproto.repo.getRecord({
@@ -85,10 +89,33 @@ function CharacterEditor(props: CharacterEditorProps) {
                     rkey: postRkey,
                 });
                 const {embed} = response.data.value as any;
-                if (embed?.images) {
-                    return embed.images.map((img: any) =>
-                        img.image.ref.toString(),
-                    );
+                if (embed?.$type === 'app.bsky.embed.images' && embed.images) {
+                    return embed.images.map((img: any) => ({
+                        cid: img.image.ref.toString(),
+                        did,
+                    }));
+                }
+                if (
+                    embed?.$type === 'app.bsky.embed.record' &&
+                    embed.record?.uri
+                ) {
+                    // Quote post with no own images - fetch from the quoted post
+                    return fetchPostImages(embed.record.uri);
+                }
+                if (embed?.$type === 'app.bsky.embed.recordWithMedia') {
+                    // Quote post that also has its own images
+                    const ownImages: {cid: string; did: string}[] =
+                        embed.media?.images
+                            ? embed.media.images.map((img: any) => ({
+                                  cid: img.image.ref.toString(),
+                                  did,
+                              }))
+                            : [];
+                    const quotedImages =
+                        embed.record?.record?.uri
+                            ? await fetchPostImages(embed.record.record.uri)
+                            : [];
+                    return [...ownImages, ...quotedImages];
                 }
             } catch {
                 // Post may not be accessible; silently skip preview
@@ -612,15 +639,13 @@ function CharacterEditor(props: CharacterEditorProps) {
                                         mt: 1,
                                     }}
                                 >
-                                    {refSheetImages.map((cid, index) => {
-                                        const did =
-                                            character.refSheet?.split('/')[2];
+                                    {refSheetImages.map(({cid, did}, index) => {
                                         const isSelected =
                                             (character.refSheetImageIndex ??
                                                 0) === index;
                                         return (
                                             <Box
-                                                key={cid}
+                                                key={`${did}/${cid}`}
                                                 sx={{
                                                     border: '3px solid',
                                                     borderColor: isSelected
@@ -690,15 +715,13 @@ function CharacterEditor(props: CharacterEditorProps) {
                                         mt: 1,
                                     }}
                                 >
-                                    {altRefImages.map((cid, index) => {
-                                        const did =
-                                            character.altRef?.split('/')[2];
+                                    {altRefImages.map(({cid, did}, index) => {
                                         const isSelected =
                                             (character.altRefImageIndex ??
                                                 0) === index;
                                         return (
                                             <Box
-                                                key={cid}
+                                                key={`${did}/${cid}`}
                                                 sx={{
                                                     border: '3px solid',
                                                     borderColor: isSelected
