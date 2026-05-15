@@ -76,8 +76,8 @@ const changelogData = [
             `Add confirmation dialog when clearing colors from a ref sheet.`,
             `Add basic markdown support for description field.`,
         ],
-        date: dayjs(`2026-05-14`),
-        version: '1.4.0',
+        date: dayjs(`2026-05-15`),
+        version: '1.4.0', // Despite the amount of updates, it's still backwards compatible so old records still show correctly. Only a minor version update.
     },
 ];
 
