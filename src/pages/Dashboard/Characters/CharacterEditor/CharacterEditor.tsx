@@ -605,6 +605,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                             onChange={handleChange}
                             margin="normal"
                             inputProps={{maxLength: 32}}
+                            sx={{mb: 3}}
                         />
                         <Box>
                             <Box sx={{alignItems: 'center', display: 'flex'}}>
@@ -779,7 +780,13 @@ function CharacterEditor(props: CharacterEditorProps) {
                             />
                         </Box>
                         <Box
-                            sx={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}
+                            sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '8px',
+                                mb: 3,
+                                mt: 3,
+                            }}
                         >
                             {character.colors?.map((color, index) => (
                                 <DraggableColorBox
@@ -791,7 +798,12 @@ function CharacterEditor(props: CharacterEditorProps) {
                             ))}
                         </Box>
                         <Box
-                            sx={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}
+                            sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '8px',
+                                mb: 3,
+                            }}
                         >
                             <Button
                                 variant="contained"
@@ -813,7 +825,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                                     </Button>
                                 )}
                         </Box>
-                        <Box>
+                        <Box sx={{mb: 3}}>
                             <Button
                                 variant="contained"
                                 color="primary"
@@ -941,6 +953,7 @@ function CharacterEditor(props: CharacterEditorProps) {
                                 />
                             }
                             label="NSFW"
+                            sx={{mb: 3}}
                         />
                         <TextField
                             label="Description"
