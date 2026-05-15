@@ -683,6 +683,15 @@ function CharacterEditor(props: CharacterEditorProps) {
                                     })}
                                 </Box>
                             )}
+                            <TextField
+                                label="Reference Credit (optional)"
+                                name="refSheetCredit"
+                                value={character.refSheetCredit ?? ''}
+                                onChange={handleChange}
+                                margin="normal"
+                                fullWidth
+                                slotProps={{htmlInput: {maxLength: 256}}}
+                            />
                         </Box>
                         <Box>
                             <Box sx={{alignItems: 'center', display: 'flex'}}>
@@ -759,6 +768,15 @@ function CharacterEditor(props: CharacterEditorProps) {
                                     })}
                                 </Box>
                             )}
+                            <TextField
+                                label="Reference Credit (optional)"
+                                name="altRefCredit"
+                                value={character.altRefCredit ?? ''}
+                                onChange={handleChange}
+                                margin="normal"
+                                fullWidth
+                                slotProps={{htmlInput: {maxLength: 256}}}
+                            />
                         </Box>
                         <Box
                             sx={{display: 'flex', flexWrap: 'wrap', gap: '8px'}}

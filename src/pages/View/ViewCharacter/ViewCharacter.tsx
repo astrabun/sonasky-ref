@@ -614,6 +614,11 @@ export function ViewCharacter() {
                                         )
                                     }
                                 />
+                                {character.refSheetCredit && (
+                                    <Typography variant="caption">
+                                        Credit: {character.refSheetCredit}
+                                    </Typography>
+                                )}
                             </Box>
                         )}
                         {showAltRef && altRefSheetImage && (
@@ -635,6 +640,11 @@ export function ViewCharacter() {
                                         )
                                     }
                                 />
+                                {character.altRefCredit && (
+                                    <Typography variant="caption">
+                                        Credit: {character.altRefCredit}
+                                    </Typography>
+                                )}
                             </Box>
                         )}
                     </div>

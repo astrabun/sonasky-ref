@@ -7,8 +7,10 @@ export interface Character {
     pronouns?: string; // Optional, max length 32 characters
     refSheet?: string; // Optional, ref to a app.bsky.feed.post
     refSheetImageIndex?: number; // Optional, index of image in refSheet post
+    refSheetCredit?: string; // Optional, credit for the ref sheet artist, max 256 characters
     altRef?: string; // Optional, ref to a app.bsky.feed.post
     altRefImageIndex?: number; // Optional, index of image in altRef post
+    altRefCredit?: string; // Optional, credit for the alt ref artist, max 256 characters
     drawWithoutAskingSFW?: boolean; // Optional
     doNotDrawWithoutAskingSFW?: boolean; // Optional
     drawWithoutAskingNSFW?: boolean; // Optional
@@ -25,8 +27,10 @@ export const CharacterTypeKeys = [
     'pronouns',
     'refSheet',
     'refSheetImageIndex',
+    'refSheetCredit',
     'altRef',
     'altRefImageIndex',
+    'altRefCredit',
     'drawWithoutAskingSFW',
     'doNotDrawWithoutAskingSFW',
     'drawWithoutAskingNSFW',
@@ -65,6 +69,12 @@ export function validateCharacter(character: Character): {
                 };
             }
         }
+    }
+    if (character.refSheetCredit && character.refSheetCredit.length > 256) {
+        return {message: 'Ref sheet credit exceeds 256 characters', status: false};
+    }
+    if (character.altRefCredit && character.altRefCredit.length > 256) {
+        return {message: 'Alt ref credit exceeds 256 characters', status: false};
     }
     if (character.pronouns && character.pronouns.length > 32) {
         return {message: 'Pronouns exceed 32 characters', status: false};
