@@ -1,5 +1,6 @@
 export type CharacterLinkType =
     | 'furaffinity'
+    | 'sofurry'
     | 'bluesky'
     | 'refsheetdotnet'
     | 'toyhouse';
@@ -14,6 +15,7 @@ export const LINK_TYPE_LABELS: Record<CharacterLinkType, string> = {
     bluesky: 'Bluesky',
     furaffinity: 'FurAffinity',
     refsheetdotnet: 'Refsheet.net',
+    sofurry: 'SoFurry',
     toyhouse: 'Toyhouse',
 };
 
@@ -21,6 +23,7 @@ export const LINK_TYPE_HINTS: Record<CharacterLinkType, string> = {
     bluesky: 'Must be on https://bsky.app',
     furaffinity: 'Must be on https://furaffinity.net',
     refsheetdotnet: 'Must be on https://refsheet.net',
+    sofurry: 'Must be on https://sofurry.com/',
     toyhouse: 'Must be on https://toyhou.se/',
 };
 
@@ -29,6 +32,7 @@ export const ALLOWED_LINK_TYPES: CharacterLinkType[] = [
     'bluesky',
     'refsheetdotnet',
     'toyhouse',
+    'sofurry',
 ];
 
 export function validateCharacterLink(link: CharacterLink): boolean {
@@ -40,6 +44,16 @@ export function validateCharacterLink(link: CharacterLink): boolean {
                     url.protocol === 'https:' &&
                     (url.hostname === 'furaffinity.net' ||
                         url.hostname === 'www.furaffinity.net')
+                );
+            } catch {
+                return false;
+            }
+        }
+        case 'sofurry': {
+            try {
+                const url = new URL(link.url);
+                return (
+                    url.protocol === 'https:' && url.hostname === 'sofurry.com'
                 );
             } catch {
                 return false;
