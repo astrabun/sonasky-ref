@@ -1,23 +1,18 @@
-import type {
-    HandleResolver,
-    ResolveHandleOptions,
-    ResolvedHandle,
-} from '@atproto-labs/handle-resolver';
 import {HANDLE_RESOLVER_URL} from '../const';
 
 // eslint-disable-next-line unicorn/no-null
-const UNRESOLVED: ResolvedHandle = null;
+const UNRESOLVED = null;
 
 /**
  * Custom handle resolver that tries /.well-known/atproto-did on the handle's
  * own domain first, then falls back to bsky.social's resolveHandle XRPC.
  * This allows did:web users on independent PDSes to sign in by handle.
  */
-export const handleResolver: HandleResolver = {
+export const handleResolver = {
     async resolve(
         handle: string,
-        options?: ResolveHandleOptions,
-    ): Promise<ResolvedHandle> {
+        options?: {signal?: AbortSignal},
+    ): Promise<string | null> {
         try {
             const response = await fetch(
                 `https://${handle}/.well-known/atproto-did`,
@@ -27,7 +22,7 @@ export const handleResolver: HandleResolver = {
                 const text = await response.text();
                 const did = text.trim();
                 if (did.startsWith('did:')) {
-                    return did as unknown as ResolvedHandle;
+                    return did;
                 }
             }
         } catch {
@@ -47,7 +42,7 @@ export const handleResolver: HandleResolver = {
                 return UNRESOLVED;
             }
             const data = (await response.json()) as {did?: string};
-            return (data.did ?? UNRESOLVED) as unknown as ResolvedHandle;
+            return data.did ?? UNRESOLVED;
         } catch {
             return UNRESOLVED;
         }

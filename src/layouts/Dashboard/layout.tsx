@@ -32,7 +32,7 @@ function Layout(props: LayoutProps) {
             <AuthProvider
                 clientId={clientId}
                 plcDirectoryUrl={PLC_DIRECTORY_URL}
-                handleResolver={handleResolver}
+                handleResolver={handleResolver as any}
                 allowHttp={ENV === 'development' || ENV === 'test'}
             >
                 <Header hideNavigation />
