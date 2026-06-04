@@ -111,27 +111,33 @@ function View() {
 
     useEffect(() => {
         if (lookupMode === 'did') {
-            rpc.get('com.atproto.repo.describeRepo', {
-                params: {
-                    repo: (blueskyHandleOrDID ?? '') as ActorIdentifier,
-                },
-            })
-                .then((response) => {
-                    const {data} = response;
-                    if (data) {
-                        setHandle((data as any).handle);
-                        setDid((data as any).did);
-                    } else {
-                        setHandle(UNKNOWN_ERROR);
-                        setDid(UNKNOWN_ERROR);
-                    }
-                    if (minLoadingTimePassed) {
-                        setLoading(false);
-                    }
+            if (blueskyHandleOrDID?.startsWith('did:web:')) {
+                /* For did:web, we already have the DID. Handle/repoData resolved
+                in the second effect once handleGetPds updates rpc to the correct PDS. */
+                setDid(blueskyHandleOrDID);
+            } else {
+                rpc.get('com.atproto.repo.describeRepo', {
+                    params: {
+                        repo: (blueskyHandleOrDID ?? '') as ActorIdentifier,
+                    },
                 })
-                .catch((error) => {
-                    handleLookupError(error);
-                });
+                    .then((response) => {
+                        const {data} = response;
+                        if (data) {
+                            setHandle((data as any).handle);
+                            setDid((data as any).did);
+                        } else {
+                            setHandle(UNKNOWN_ERROR);
+                            setDid(UNKNOWN_ERROR);
+                        }
+                        if (minLoadingTimePassed) {
+                            setLoading(false);
+                        }
+                    })
+                    .catch((error) => {
+                        handleLookupError(error);
+                    });
+            }
         } else {
             rpc.get('com.atproto.identity.resolveHandle', {
                 params: {
@@ -173,8 +179,34 @@ function View() {
                     const {data} = response;
                     setRepoData(data);
                 });
+        } else if (did?.startsWith('did:web:') && !handle) {
+            void rpc
+                .get('com.atproto.repo.describeRepo', {
+                    params: {repo: did as ActorIdentifier},
+                })
+                .then((response) => {
+                    const {data} = response;
+                    if (data) {
+                        setRepoData(data);
+                        setHandle((data as any).handle);
+                    }
+                })
+                .catch(() => {
+                    // Fires before rpc is updated to the correct PDS; rpc change triggers retry
+                });
         }
     }, [handle, did, rpc]);
+
+    useEffect(() => {
+        if (
+            minLoadingTimePassed &&
+            did?.startsWith('did:web:') &&
+            handle &&
+            handle !== UNKNOWN_ERROR
+        ) {
+            setLoading(false);
+        }
+    }, [did, handle, minLoadingTimePassed]);
 
     useEffect(() => {
         if (loading) {
