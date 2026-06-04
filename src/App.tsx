@@ -14,6 +14,7 @@ import Logout from './pages/Logout';
 
 import {ENV, HANDLE_RESOLVER_URL, PLC_DIRECTORY_URL} from './const';
 import {AuthProvider} from './auth/auth-provider';
+import {handleResolver} from './helpers/handleResolver';
 import Changelog from './pages/Dashboard/Changelog/Changelog';
 
 export const clientId =
@@ -47,7 +48,7 @@ function AuthWrapper({children}: {children: React.ReactNode}) {
         <AuthProvider
             clientId={clientId}
             plcDirectoryUrl={PLC_DIRECTORY_URL}
-            handleResolver={HANDLE_RESOLVER_URL}
+            handleResolver={handleResolver as any}
             allowHttp={ENV === 'development' || ENV === 'test'}
         >
             {children}
