@@ -81,7 +81,9 @@ const changelogData = [
     },
     {
         changes: [
-            `Bugfix: Add additional resolution option for W3C community draft did:web method.`,
+            `Bugfix: Add additional resolution option for W3C community draft did:web method on profile view page.`,
+            `Bugfix: Add additional resolution option for W3C community draft did:web method on character view page.`,
+            `Bugfix: fix flash to 404 on loading character from did:web repo.`,
         ],
         date: dayjs(`2026-06-04`),
         version: '1.4.1',
