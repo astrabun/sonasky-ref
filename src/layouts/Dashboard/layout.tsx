@@ -99,7 +99,7 @@ function Layout(props: LayoutProps) {
                     </Link>{' '}
                     &nbsp;| Made with 💙 by &nbsp;
                     <a
-                        href="https://bsky.app/profile/astra.bunnys.ky"
+                        href="https://bsky.app/profile/astrabun.com"
                         target="_blank"
                         style={{color: 'inherit'}}
                     >
