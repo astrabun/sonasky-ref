@@ -116,27 +116,27 @@ function View() {
                 in the second effect once handleGetPds updates rpc to the correct PDS. */
                 setDid(blueskyHandleOrDID);
             } else {
-            rpc.get('com.atproto.repo.describeRepo', {
-                params: {
-                    repo: (blueskyHandleOrDID ?? '') as ActorIdentifier,
-                },
-            })
-                .then((response) => {
-                    const {data} = response;
-                    if (data) {
-                        setHandle((data as any).handle);
-                        setDid((data as any).did);
-                    } else {
-                        setHandle(UNKNOWN_ERROR);
-                        setDid(UNKNOWN_ERROR);
-                    }
-                    if (minLoadingTimePassed) {
-                        setLoading(false);
-                    }
+                rpc.get('com.atproto.repo.describeRepo', {
+                    params: {
+                        repo: (blueskyHandleOrDID ?? '') as ActorIdentifier,
+                    },
                 })
-                .catch((error) => {
-                    handleLookupError(error);
-                });
+                    .then((response) => {
+                        const {data} = response;
+                        if (data) {
+                            setHandle((data as any).handle);
+                            setDid((data as any).did);
+                        } else {
+                            setHandle(UNKNOWN_ERROR);
+                            setDid(UNKNOWN_ERROR);
+                        }
+                        if (minLoadingTimePassed) {
+                            setLoading(false);
+                        }
+                    })
+                    .catch((error) => {
+                        handleLookupError(error);
+                    });
             }
         } else {
             rpc.get('com.atproto.identity.resolveHandle', {
@@ -198,7 +198,12 @@ function View() {
     }, [handle, did, rpc]);
 
     useEffect(() => {
-        if (minLoadingTimePassed && did?.startsWith('did:web:') && handle && handle !== UNKNOWN_ERROR) {
+        if (
+            minLoadingTimePassed &&
+            did?.startsWith('did:web:') &&
+            handle &&
+            handle !== UNKNOWN_ERROR
+        ) {
             setLoading(false);
         }
     }, [did, handle, minLoadingTimePassed]);
