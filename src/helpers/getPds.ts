@@ -21,7 +21,9 @@ interface Service {
 
 export const getPds = async (did: string) => {
     try {
-        const url = `https://plc.directory/${did}`;
+        const url = did.startsWith('did:web:')
+            ? `https://${did.slice('did:web:'.length)}/.well-known/did.json`
+            : `https://plc.directory/${did}`;
         const response = await fetch(url);
         const data = (await response.json()) as PlcDirectoryResult;
         const pds = data.service[0].serviceEndpoint;
