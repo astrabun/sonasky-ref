@@ -10,7 +10,8 @@ import React from 'react';
 import Header from '../../assets/partials/Header';
 import {AuthProvider} from '../../auth/auth-provider';
 import {clientId} from '../../App';
-import {ENV, FLAGS, HANDLE_RESOLVER_URL, PLC_DIRECTORY_URL} from '../../const';
+import {ENV, FLAGS, PLC_DIRECTORY_URL} from '../../const';
+import {handleResolver} from '../../helpers/handleResolver';
 import InnerDashLayout from './innerDash';
 import {latestVersion} from '../../changelog';
 import {Link} from 'react-router';
@@ -31,7 +32,7 @@ function Layout(props: LayoutProps) {
             <AuthProvider
                 clientId={clientId}
                 plcDirectoryUrl={PLC_DIRECTORY_URL}
-                handleResolver={HANDLE_RESOLVER_URL}
+                handleResolver={handleResolver}
                 allowHttp={ENV === 'development' || ENV === 'test'}
             >
                 <Header hideNavigation />
