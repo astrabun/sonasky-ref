@@ -79,6 +79,13 @@ const changelogData = [
         date: dayjs(`2026-05-15`),
         version: '1.4.0', // Despite the amount of updates, it's still backwards compatible so old records still show correctly. Only a minor version update.
     },
+    {
+        changes: [
+            `Bugfix: Add additional resolution option for W3C community draft did:web method.`,
+        ],
+        date: dayjs(`2026-06-04`),
+        version: '1.4.1',
+    },
 ];
 
 // Get latest version by the highest semver version
