@@ -164,7 +164,16 @@ export function OAuthSignInForm({
                     'Please provide a valid handle, DID or PDS URL',
                 );
             } catch (error) {
-                setError((error as any)?.message || String(error));
+                console.error('Sign-in error:', error);
+                const cause = (error as any)?.cause;
+                const isBidirectionalFailure = cause?.message?.includes(
+                    'does not include the handle',
+                );
+                setError(
+                    isBidirectionalFailure
+                        ? `Handle not found in your DID document. Try signing in with your DID or PDS URL instead.`
+                        : (error as any)?.message || String(error),
+                );
             } finally {
                 setLoading(false);
             }
