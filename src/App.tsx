@@ -1,6 +1,6 @@
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import {BrowserRouter, Route, Routes} from 'react-router';
+import {BrowserRouter, Navigate, Route, Routes, useParams} from 'react-router';
 import Home from './pages/Home';
 import About from './pages/About';
 import Dashboard from './pages/Dashboard';
@@ -42,6 +42,16 @@ const theme = createTheme({
         dark: true,
     },
 });
+
+function RedirectToProfile() {
+    const {blueskyHandleOrDID} = useParams();
+    return (
+        <Navigate
+            to={`/profile/${blueskyHandleOrDID}`}
+            replace
+        />
+    );
+}
 
 function AuthWrapper({children}: {children: React.ReactNode}) {
     return (
@@ -133,6 +143,10 @@ function App() {
                     <Route
                         path="/profile/:blueskyHandleOrDID"
                         element={<View />}
+                    />
+                    <Route
+                        path="/profile/:blueskyHandleOrDID/post/:postId"
+                        element={<RedirectToProfile />}
                     />
                     <Route
                         path="/profile/:blueskyHandleOrDID/:rkey"
