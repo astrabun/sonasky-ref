@@ -88,6 +88,13 @@ const changelogData = [
         date: dayjs(`2026-06-04`),
         version: '1.4.1',
     },
+    {
+        changes: [
+            `Enhancement: If using https://ssky.app/profile/<something>, if the URL ends in /post/<something>, it'll strip the post part and just go to the profile..`,
+        ],
+        date: dayjs(`2026-06-05`),
+        version: '1.4.2',
+    },
 ];
 
 // Get latest version by the highest semver version
