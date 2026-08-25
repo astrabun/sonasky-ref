@@ -63,7 +63,10 @@ function Home() {
                 })
                 .catch((error: unknown) => {
                     if (
-                        !(error instanceof DOMException && error.name === 'AbortError')
+                        !(
+                            error instanceof DOMException &&
+                            error.name === 'AbortError'
+                        )
                     ) {
                         setOptions([]);
                     }
@@ -148,9 +151,10 @@ function Home() {
                                     }
                                 }}
                                 renderOption={(props, option) => {
-                                    const {key, ...rest} = props as typeof props & {
-                                        key: string;
-                                    };
+                                    const {key, ...rest} =
+                                        props as typeof props & {
+                                            key: string;
+                                        };
                                     return (
                                         <Box
                                             component="li"
@@ -204,7 +208,8 @@ function Home() {
                                                         {!(
                                                             handle.startsWith(
                                                                 'did:plc:',
-                                                            ) || handle.includes('.')
+                                                            ) ||
+                                                            handle.includes('.')
                                                         ) && (
                                                             <InputAdornment position="end">
                                                                 <Typography
@@ -215,7 +220,10 @@ function Home() {
                                                                 </Typography>
                                                             </InputAdornment>
                                                         )}
-                                                        {params.InputProps.endAdornment}
+                                                        {
+                                                            params.InputProps
+                                                                .endAdornment
+                                                        }
                                                     </>
                                                 ),
                                             },
