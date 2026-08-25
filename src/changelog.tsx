@@ -95,6 +95,13 @@ const changelogData = [
         date: dayjs(`2026-06-05`),
         version: '1.4.2',
     },
+    {
+        changes: [
+            `Quality of Life Update: Searching for a user on the homepage will auto-fill/suggest a user as you type.`,
+        ],
+        date: dayjs(`2026-08-25`),
+        version: '1.4.3',
+    },
 ];
 
 // Get latest version by the highest semver version
