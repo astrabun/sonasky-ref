@@ -102,6 +102,13 @@ const changelogData = [
         date: dayjs(`2026-08-25`),
         version: '1.4.3',
     },
+    {
+        changes: [
+            `Basic analytics (self-hosted Swetrix, NOT a big provider like Google) to get an idea of usage`,
+        ],
+        date: dayjs(`2026-09-06`),
+        version: '1.4.4',
+    },
 ];
 
 // Get latest version by the highest semver version
