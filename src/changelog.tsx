@@ -109,6 +109,13 @@ const changelogData = [
         date: dayjs(`2026-09-06`),
         version: '1.4.4',
     },
+    {
+        changes: [
+            `Scope narrowed when getting oauth token from Bluesky; now tokens are scoped ONLY to sonasky ref repo records management.`,
+        ],
+        date: dayjs(`2026-09-08`),
+        version: '1.4.5',
+    },
 ];
 
 // Get latest version by the highest semver version
