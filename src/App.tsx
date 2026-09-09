@@ -33,7 +33,7 @@ export const clientId =
                       }).toString(),
                   },
               ).href,
-              scope: 'atproto transition:generic',
+              scope: 'atproto repo:app.sonasky.ref',
           })}`
         : `https://ref.sonasky.app/client_metadata.json`;
 
